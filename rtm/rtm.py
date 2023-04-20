@@ -71,22 +71,84 @@ class RTM:
 
     def initial_values(self):
         # TODO currently all the parameters are set to default values
+        # specify the sensor type
+        self.sensor = "Sentinel2_Full"
+        # specify the leaf model type
         self.lop = "prospectD"
-        self.canopy_arch = "sail"
+        # specify the canopy model type
+        self.canopy_arch = "inform"
+
+        self.bg_spec = None
+        self.bg_type = "default"
+        # set the default values for the parameters of leaf and canopy models
         self.para_names = ["N", "cab", "cw", "cm", "LAI", "typeLIDF", "LIDF",
                            "hspot", "psoil", "tts", "tto", "psi", "cp", "cbc",
                            "car", "anth", "cbrown", "LAIu", "cd", "sd", "h"]
-
-        self.data_mean = None
         # dictionary for parameters is initialized with Nones
         self.para_dict = dict(
             zip(self.para_names, [None] * len(self.para_names))
         )
+
+        # Background Parameters
+        # Default soil spectrum without loading background spectrum
         self.bg_spec = None
         self.bg_type = "default"
+        # Brightness Factor (psoil) when using default soil spectrum
+        self.para_dict["psoil"] = 0.8
+
+        # Leaf Model Parameters
+        # N: Structure Parameter (N)
+        self.para_dict["N"] = 1.5
+        # cab: Chlorophyll A+B (cab)
+        self.para_dict["cab"] = 40
+        # cw: Water Content (Cw)
+        self.para_dict["cw"] = 0.03
+        # cm: Dry Matter (cm)
+        self.para_dict["cm"] = 0.012
+        # car: Carotenoids (Ccx)
+        self.para_dict["car"] = 10
+        # cbrown: Brown Pigments (Cbrown)
+        self.para_dict["cbrown"] = 0.25
+        # anth: Anthocyanins (Canth)
+        self.para_dict["anth"] = 2
+        # cp: Proteins (Cp)
+        self.para_dict["cp"] = 0.0015
+        # cbc: Carbon-based constituents (CBC)
+        self.para_dict["cbc"] = 0.01
+
+        # Canopy Model Parameters
+        # LAI: (Single) Leaf Area Index (LAI)
+        self.para_dict["LAI"] = 7
+        # TODO what are typeLIDF
+        # typeLIDF: Leaf Angle Distribution (LIDF) type: 1 = Beta? 2 = Ellipsoidal
+        self.para_dict["typeLIDF"] = 2
+        # LIDF: Leaf Angle (LIDF), only used when LIDF is Ellipsoidal
+        self.para_dict["LIDF"] = 30
+        # hspot: Hot Spot Size Parameter (Hspot)
+        self.para_dict["hspot"] = 0.01
+        # tto: Observation zenith angle (Tto)
+        self.para_dict["tto"] = 0
+        # tts: Sun zenith angle (Tts)
+        self.para_dict["tts"] = 30
+        # psi: Relative azimuth angle (Psi)
+        self.para_dict["psi"] = 0
+
+        # Forest Model Parameters
+        # LAIu: Undergrowth LAI (LAIu)
+        self.para_dict["LAIu"] = 0.1
+        # sd: Stem Density (SD)
+        self.para_dict["sd"] = 650
+        # h: Tree Height (H)
+        self.para_dict["h"] = 20
+        # cd: Crown Diameter (CD)
+        self.para_dict["cd"] = 4.5
+
+        # TODO set data_mean to None for future evaluations
+        self.data_mean = None
 
     def init_sensorlist(self):
         # TODO currently the sensor list is not yet implemented
+
         pass
 
     def select_s2s(self):
@@ -130,7 +192,9 @@ class RTM:
         # create new Instance of the RTM
         mod_I = mod.InitModel(
             lop=self.lop, canopy_arch=self.canopy_arch, nodat=-999,
-            int_boost=1.0, s2s=self.sensor
+            int_boost=1.0,
+            # NOTE the following parameters are not yet implemented
+            s2s=self.sensor
         )
         # initialize a single model run
         # TODO decide which parameters are learnable or to be learned
@@ -152,6 +216,7 @@ class RTM:
                                                 car=self.para_dict["car"],
                                                 cbrown=self.para_dict["cbrown"],
                                                 anth=self.para_dict["anth"],
+                                                # NOTE the following parameters are not yet implemented
                                                 soil=self.bg_spec,
                                                 LAIu=self.para_dict["LAIu"],
                                                 cd=self.para_dict["cd"],
