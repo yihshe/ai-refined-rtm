@@ -14,9 +14,10 @@ Verhoef W. (1984), Light scattering by leaf layers with application to canopy re
 Remote Sensing of Environment, 16, 125-141. Article.
 '''
 
-from lmuvegetationapps.Resources.PROSAIL.dataSpec import *
-from lmuvegetationapps.Resources.PROSAIL.SAILdata import *
+from rtm.Resources.PROSAIL.dataSpec import *
+from rtm.Resources.PROSAIL.SAILdata import *
 import numpy as np
+
 
 class Sail:
 
@@ -45,19 +46,23 @@ class Sail:
         costts_costto = self.costts * self.costto
         tantts = np.tan(self.tts)
         tantto = np.tan(self.tto)
-        dso = np.sqrt(tantts ** 2 + tantto ** 2 - 2 * tantts * tantto * self.cospsi)
+        dso = np.sqrt(tantts ** 2 + tantto ** 2 - 2 *
+                      tantts * tantto * self.cospsi)
 
         # Soil Reflectance Properties
         if type(understory) is np.ndarray:
             soil = understory
-        elif not isinstance(soil, np.ndarray):  # "soil" is not supplied as np.array, but is "None" instead
-            soil = np.outer(psoil, Rsoil1) + np.outer((1-psoil), Rsoil2)  # np.outer = outer product (vectorized)
+        # "soil" is not supplied as np.array, but is "None" instead
+        elif not isinstance(soil, np.ndarray):
+            # np.outer = outer product (vectorized)
+            soil = np.outer(psoil, Rsoil1) + np.outer((1-psoil), Rsoil2)
 
         # Generate Leaf Angle Distribution From Average Leaf Angle (ellipsoidal) or (a, b) parameters
         lidf = self.lidf_calc(LIDF, TypeLIDF)
 
         # Weighted Sums of LIDF
-        litab = np.concatenate((np.arange(5, 85, 10), np.arange(81, 91, 2)), axis=0) 
+        litab = np.concatenate(
+            (np.arange(5, 85, 10), np.arange(81, 91, 2)), axis=0)
         # litab -> 5, 15, 25, 35, 45, ... , 75, 81, 83, ... 89
         litab = np.radians(litab)
 
@@ -142,7 +147,8 @@ class Sail:
         rsod = (T1 + T2 - T3) / (1.0 - rinf2)
 
         # Hotspot-effect
-        alf = np.where(hspot > 0, ((dso / hspot) * 2.0) / (ks + ko).flatten(), 200)[:, np.newaxis]
+        alf = np.where(hspot > 0, ((dso / hspot) * 2.0) /
+                       (ks + ko).flatten(), 200)[:, np.newaxis]
         alf[alf > 200] = 200
 
         fhot = LAI * np.sqrt(ko * ks)
@@ -153,20 +159,25 @@ class Sail:
         y2 = -(ko + ks) * LAI * x2 + fhot * (1.0 - np.exp(-alf * x2)) / alf
         f2 = np.exp(y2)
 
-        x1 = np.pad(x2, ((0, 0), (1, 0)), mode='constant')[:, :-1]  # Shifts array by one and fills with constant = 0
+        # Shifts array by one and fills with constant = 0
+        x1 = np.pad(x2, ((0, 0), (1, 0)), mode='constant')[:, :-1]
         y1 = np.pad(y2, ((0, 0), (1, 0)), mode='constant')[:, :-1]  # -"-
-        f1 = np.pad(f2, ((0, 0), (1, 0)), mode='constant', constant_values=1)[:, :-1]  # -"- with constant = 1
+        f1 = np.pad(f2, ((0, 0), (1, 0)), mode='constant', constant_values=1)[
+            :, :-1]  # -"- with constant = 1
         sumint = np.sum((f2 - f1) * (x2 - x1) / (y2 - y1), axis=1)
 
         tsstoo = np.where(alf == 0, tss, f2[:, -1, np.newaxis])
-        sumint = np.where(alf == 0, (1.0 - tss) / (ks * LAI), sumint[:, np.newaxis])
+        sumint = np.where(alf == 0, (1.0 - tss) /
+                          (ks * LAI), sumint[:, np.newaxis])
 
         # Bidirectional reflectance
         rsos = w * LAI * sumint  # Single scattering contribution
         dn = 1.0 - soil * rdd    # Soil interaction
         tdd_dn = tdd / dn
-        rdot = rdo + soil * (tdo + too) * tdd_dn  # hemispherical-directional reflectance factor in viewing direction
-        rsodt = rsod + ((tss + tsd) * tdo + (tsd + tss * soil * rdd) * too) * soil / dn
+        # hemispherical-directional reflectance factor in viewing direction
+        rdot = rdo + soil * (tdo + too) * tdd_dn
+        rsodt = rsod + ((tss + tsd) * tdo +
+                        (tsd + tss * soil * rdd) * too) * soil / dn
         rsost = rsos + tsstoo * soil
         rsot = rsost + rsodt  # rsot: bi-directional reflectance factor
 
@@ -192,7 +203,8 @@ class Sail:
     def lidf_calc(self, LIDF, TypeLIDF):
 
         if TypeLIDF[0] == 1:  # Beta-Distribution, all LUT-members need to have same TypeLIDF!
-            freq = beta_dict[LIDF.astype(np.int), :]  # look up frequencies for beta-distribution
+            # look up frequencies for beta-distribution
+            freq = beta_dict[LIDF.astype(np.int), :]
 
         else:  # Ellipsoidal distribution
             freq = self.campbell(LIDF)
@@ -203,12 +215,15 @@ class Sail:
     def campbell(self, ALIA):
 
         n = 13
-        excent = np.exp(-1.6184e-5 * ALIA ** 3 + 2.1145e-3 * ALIA ** 2 - 1.2390e-1 * ALIA + 3.2491)
+        excent = np.exp(-1.6184e-5 * ALIA ** 3 + 2.1145e-3 *
+                        ALIA ** 2 - 1.2390e-1 * ALIA + 3.2491)
         freq = np.zeros(shape=(ALIA.shape[0], n))
 
-        x1 = excent[:, np.newaxis] / np.sqrt(1.0 + np.outer((excent ** 2), tan_tl1))  # Shape: ns, 13
+        x1 = excent[:, np.newaxis] / \
+            np.sqrt(1.0 + np.outer((excent ** 2), tan_tl1))  # Shape: ns, 13
         x12 = x1 ** 2
-        x2 = excent[:, np.newaxis] / np.sqrt(1.0 + np.outer((excent ** 2), tan_tl2))
+        x2 = excent[:, np.newaxis] / \
+            np.sqrt(1.0 + np.outer((excent ** 2), tan_tl2))
         x22 = x2 ** 2
         alpha = excent / np.sqrt(np.abs(1 - excent ** 2))
         alpha2 = (alpha ** 2)[:, np.newaxis]
@@ -221,7 +236,8 @@ class Sail:
         almx2 = np.sqrt(alpha2 - x22)
         dumm = x1 * almx1 + alpha2 * np.arcsin(x1 / alpha[:, np.newaxis])
 
-        freq[excent > 1.0, :] = np.abs(dump - (x2 * alpx2 + alpha2 * np.log(x2 + alpx2)))[excent > 1.0, :]
+        freq[excent > 1.0, :] = np.abs(
+            dump - (x2 * alpx2 + alpha2 * np.log(x2 + alpx2)))[excent > 1.0, :]
         freq[excent < 1.0, :] = np.abs(dumm - (x2 * almx2 + alpha2 *
                                                np.arcsin(x2 / alpha[:, np.newaxis])))[excent < 1.0, :]
         freq[excent == 1.0, :] = np.abs(cos_tl1 - cos_tl2)
@@ -247,21 +263,24 @@ class Sail:
         bto = np.where(np.abs(cosbto) < 1,
                        np.arccos(cosbto),
                        np.where(self.tto[:, np.newaxis] < np.pi * 0.5, np.pi, 0.0))
-        doo = np.where(np.abs(cosbto) < 1, so, np.where(self.tto[:, np.newaxis] < np.pi * 0.5, co, -co))
+        doo = np.where(np.abs(cosbto) < 1, so, np.where(
+            self.tto[:, np.newaxis] < np.pi * 0.5, co, -co))
 
         chi_o = 2.0 / np.pi * ((bto - np.pi * 0.5)*co + np.sin(bto) * so)
 
         btran1 = np.abs(bts - bto)
         btran2 = np.pi - np.abs(bts + bto - np.pi)
 
-        bt1 = np.where(self.psi[:, np.newaxis] < btran1, self.psi[:, np.newaxis], btran1)
+        bt1 = np.where(self.psi[:, np.newaxis] < btran1,
+                       self.psi[:, np.newaxis], btran1)
         bt2 = np.where(self.psi[:, np.newaxis] < btran1, btran1, np.where(self.psi[:, np.newaxis]
                                                                           <= btran2, self.psi[:, np.newaxis], btran2))
         bt3 = np.where(self.psi[:, np.newaxis] < btran1, btran2, np.where(self.psi[:, np.newaxis]
                                                                           <= btran2, btran2, self.psi[:, np.newaxis]))
 
         t1 = 2 * cs * co + ss * so * self.cospsi[:, np.newaxis]
-        t2 = np.where(bt2 > 0, np.sin(bt2) * (2 * ds * doo + ss * so * np.cos(bt1) * np.cos(bt3)), 0)
+        t2 = np.where(bt2 > 0, np.sin(bt2) * (2 * ds * doo +
+                      ss * so * np.cos(bt1) * np.cos(bt3)), 0)
 
         denom = 2.0 * np.pi ** 2
         frho = ((np.pi - bt2) * t1 + t2) / denom

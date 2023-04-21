@@ -38,39 +38,38 @@ from rtm import APP_DIR
 import warnings
 warnings.filterwarnings('ignore')  # ignore warnings, like ZeroDivision
 
-# from enmapbox.gui.utils import loadUi
-# from PyQt5 import uic
-
-pathUI_IVVRM = os.path.join(APP_DIR, 'Resources/UserInterfaces/IVVRM_main.ui')
-pathUI_loadtxt = os.path.join(
-    APP_DIR, 'Resources/UserInterfaces/LoadTxtFile.ui')
-pathUI_wavelengths = os.path.join(
-    APP_DIR, 'Resources/UserInterfaces/Select_Wavelengths.ui')
-pathUI_sensor = os.path.join(
-    APP_DIR, 'Resources/UserInterfaces/GUI_SensorEditor.ui')
-
 # class RTM is the main class to run the Radiative Transfer Model
 
 
 class RTM:
     def __init__(self):
         super(RTM, self).__init__()
-        # NOTE whether to use the GUI parameters or not is not yet decided
-        # uic.loadUi(pathUI_IVVRM, self)
-
-        # self.special_chars()    # place special characters that could not be set in Qt Designer
-        self.initial_values()
-        # self.update_slider_pos()
-        # self.update_lineEdit_pos()
-        self.deactivate_sliders()
-        self.init_sensorlist()
+        # store all model choices available for the user
+        self.model_choice_init()
+        # initialize the model parameters
         self.para_init()
-        self.select_model()
-        self.mod_interactive()
-        self.mod_exec()
+        # self.mod_exec()
 
-    def initial_values(self):
-        # TODO currently all the parameters are set to default values
+    def model_choice_init(self):
+        list_dir = os.listdir(APP_DIR + "/Resources/Spec2Sensor/srf")
+        # Get all files in the SRF directory
+        list_allfiles = [item for item in list_dir if os.path.isfile(
+            APP_DIR + "/Resources/Spec2Sensor/srf/" + item)]
+        # Get all files from that list with extension .srf, but pop the extension to get the name of the sensor
+        list_files = [item.split('.')[0] for item in list_allfiles if item.split('.')[
+            1] == 'srf']
+        list_files.insert(0, 'default')
+
+        # store sensor list
+        self.sensor_list = list_files
+        # store leaf model list
+        self.lop_list = ['prospect4', 'prospect5', 'prospect5B', 'prospectD',
+                         'prospectPro']
+        # store canopy model list
+        self.canopy_arch_list = ['sail', 'inform', 'None']
+
+    def para_init(self):
+        # Set all parameters to default values according to the app UI
         # specify the sensor type
         self.sensor = "Sentinel2_Full"
         # specify the leaf model type
@@ -78,8 +77,6 @@ class RTM:
         # specify the canopy model type
         self.canopy_arch = "inform"
 
-        self.bg_spec = None
-        self.bg_type = "default"
         # set the default values for the parameters of leaf and canopy models
         self.para_names = ["N", "cab", "cw", "cm", "LAI", "typeLIDF", "LIDF",
                            "hspot", "psoil", "tts", "tto", "psi", "cp", "cbc",
@@ -91,8 +88,8 @@ class RTM:
 
         # Background Parameters
         # Default soil spectrum without loading background spectrum
-        self.bg_spec = None
         self.bg_type = "default"
+        self.bg_spec = None
         # Brightness Factor (psoil) when using default soil spectrum
         self.para_dict["psoil"] = 0.8
 
@@ -118,9 +115,10 @@ class RTM:
 
         # Canopy Model Parameters
         # LAI: (Single) Leaf Area Index (LAI)
-        self.para_dict["LAI"] = 7
-        # TODO what are typeLIDF
-        # typeLIDF: Leaf Angle Distribution (LIDF) type: 1 = Beta? 2 = Ellipsoidal
+        self.para_dict["LAI"] = 7 if self.canopy_arch == "inform" else 3
+        # typeLIDF: Leaf Angle Distribution (LIDF) type: 1 = Beta, 2 = Ellipsoidal
+        # if typeLIDF = 2, LIDF is set to between 0 and 90 as Leaf Angle to calculate the Ellipsoidal distribution
+        # if typeLIDF = 1, LIDF is set between 0 and 5 as index of one of the six Beta distributions
         self.para_dict["typeLIDF"] = 2
         # LIDF: Leaf Angle (LIDF), only used when LIDF is Ellipsoidal
         self.para_dict["LIDF"] = 30
@@ -146,41 +144,28 @@ class RTM:
         # TODO set data_mean to None for future evaluations
         self.data_mean = None
 
-    def init_sensorlist(self):
-        # TODO currently the sensor list is not yet implemented
+    def select_model(self,
+                     sensor="Sentinel2_Full",
+                     lop="prospectD",
+                     canopy_arch="inform",
+                     bg_type="default",
+                     bg_spec=None,):
+        # Reset the choice of sub-models
+        assert sensor in self.sensor_list
+        assert lop in self.lop_list
+        assert canopy_arch in self.canopy_arch_list
+        self.sensor = sensor
+        self.lop = lop
+        self.canopy_arch = canopy_arch
+        self.bg_type = bg_type
+        self.bg_spec = bg_spec
 
+    def para_reset(self, **para_dict):
+        # TODO decide the learnable parameters to reset
+        # TODO should we bound the range of parameters in model training?
+        # or should the model just learn a scale factor as in Pheno-VAE?
+        self.para_dict.update(para_dict)
         pass
-
-    def select_s2s(self):
-        # TODO currently the sensor list is not yet implemented
-        pass
-
-    def para_init(self):
-        # TODO check the implementation of select_s2s
-        # initialize the sensor without triggering a new PROSAIL run
-        self.select_s2s(sensor_index=0, trigger=False)
-        # TODO set the default values for the parameters
-        self.para_dict["N"] = 1.5
-        self.para_dict["cab"] = 40
-        self.para_dict["cw"] = 0.03
-        self.para_dict["cm"] = 0.012
-        self.para_dict["LAI"] = 2
-        self.para_dict["typeLIDF"] = 2
-        self.para_dict["LIDF"] = 0.5
-        self.para_dict["hspot"] = 0.01
-        self.para_dict["psoil"] = 0.5
-        self.para_dict["tts"] = 45
-        self.para_dict["tto"] = 45
-        self.para_dict["psi"] = 0
-        self.para_dict["cp"] = 0
-        self.para_dict["car"] = 0.01
-        self.para_dict["anth"] = 0.01
-        self.para_dict["cbrown"] = 0.01
-        self.para_dict["LAIu"] = 0
-        self.para_dict["cd"] = 0.01
-        self.para_dict["sd"] = 0.01
-        self.para_dict["h"] = 0.01
-        self.para_dict["cbc"] = 0.01
 
     # execute the model to run the radiative transfer model
     def mod_exec(self):
@@ -222,10 +207,3 @@ class RTM:
                                                 cd=self.para_dict["cd"],
                                                 sd=self.para_dict["sd"],
                                                 h=self.para_dict["h"])[0, :]
-
-        # NOTE plotting may not be necessary but track the output during training
-        self.plotting()
-
-        def plotting(self):
-            # TODO implement plotting
-            pass

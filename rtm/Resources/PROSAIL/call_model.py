@@ -30,11 +30,11 @@
 import os
 import numpy as np
 from scipy.stats import truncnorm
-import lmuvegetationapps.Resources.PROSAIL.SAIL as SAIL_v
-import lmuvegetationapps.Resources.PROSAIL.INFORM as INFORM_v
-import lmuvegetationapps.Resources.PROSAIL.prospect as prospect_v
-from lmuvegetationapps.Resources.PROSAIL.dataSpec import lambd
-from lmuvegetationapps.Resources.Spec2Sensor.Spec2Sensor_core import Spec2Sensor
+import rtm.Resources.PROSAIL.SAIL as SAIL_v
+import rtm.Resources.PROSAIL.INFORM as INFORM_v
+import rtm.Resources.PROSAIL.prospect as prospect_v
+from rtm.Resources.PROSAIL.dataSpec import lambd
+from rtm.Resources.Spec2Sensor.Spec2Sensor_core import Spec2Sensor
 import warnings
 import time
 

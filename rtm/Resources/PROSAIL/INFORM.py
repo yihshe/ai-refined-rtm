@@ -89,7 +89,7 @@ Coupling INFORM with Prospect4/5: Henning Buddenbaum, 2012
 _________________________________________________________________________
 """
 
-from lmuvegetationapps.Resources.PROSAIL.dataSpec import *
+from rtm.Resources.PROSAIL.dataSpec import *
 
 
 class INFORM:
@@ -121,7 +121,8 @@ class INFORM:
         # Ground coverage by shadow (cs) under a solar zenith angle theta_s
         cs = 1-np.exp(-k*sd/self.costts)
         # Geometrical factor (g) depending on the illumination and viewing geometry
-        g = np.power((np.power(self.tantto, 2) + np.power(self.tantts, 2) - 2*self.tantto*self.tantts*self.cospsi), 0.5)
+        g = np.power((np.power(self.tantto, 2) + np.power(self.tantts,
+                     2) - 2*self.tantto*self.tantts*self.cospsi), 0.5)
         # Correlation coefficient (p)
         p = np.exp(-g*h/cd)
 
@@ -130,12 +131,14 @@ class INFORM:
         # Tree crowns with shadowed background (Fcd)
         Fcd = co * cs + p * np.power((co * (1 - co) * cs * (1 - cs)), 0.5)
         # Tree crowns with sunlit background (Fcs)
-        Fcs = co * (1 - cs) - p * np.power((co * (1 - co) * cs * (1 - cs)), 0.5)
+        Fcs = co * (1 - cs) - p * \
+            np.power((co * (1 - co) * cs * (1 - cs)), 0.5)
         # Shadowed open space (Fod)
-        Fod = (1 - co) * cs - p * np.power((co * (1 - co) * cs * (1 - cs)), 0.5)
+        Fod = (1 - co) * cs - p * \
+            np.power((co * (1 - co) * cs * (1 - cs)), 0.5)
         # Sunlit open space (Fos)
-        Fos = (1 - co) * (1 - cs) + p * np.power((co * (1 - co) * cs * (1 - cs)), 0.5)
-
+        Fos = (1 - co) * (1 - cs) + p * \
+            np.power((co * (1 - co) * cs * (1 - cs)), 0.5)
 
         # Forest reflectance (FLIM model)
         # Ground factor (G), that is ground contribution to scene reflectance
