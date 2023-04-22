@@ -177,9 +177,7 @@ class RTM:
         # create new Instance of the RTM
         mod_I = mod.InitModel(
             lop=self.lop, canopy_arch=self.canopy_arch, nodat=-999,
-            int_boost=1.0,
-            # NOTE the following parameters are not yet implemented
-            s2s=self.sensor
+            int_boost=1.0, s2s=self.sensor
         )
         # initialize a single model run
         # TODO decide which parameters are learnable or to be learned
@@ -201,7 +199,6 @@ class RTM:
                                                 car=self.para_dict["car"],
                                                 cbrown=self.para_dict["cbrown"],
                                                 anth=self.para_dict["anth"],
-                                                # NOTE the following parameters are not yet implemented
                                                 soil=self.bg_spec,
                                                 LAIu=self.para_dict["LAIu"],
                                                 cd=self.para_dict["cd"],
