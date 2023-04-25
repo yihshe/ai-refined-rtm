@@ -4,7 +4,6 @@ from torchvision.utils import make_grid
 from base import BaseTrainer
 from utils import inf_loop, MetricTracker
 
-
 class Trainer(BaseTrainer):
     """
     Trainer class
@@ -26,7 +25,8 @@ class Trainer(BaseTrainer):
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
         self.log_step = int(np.sqrt(data_loader.batch_size))
-
+        
+        # TODO write the metrics to wandb, also remove self.writer which is an instance of TensorboardWriter
         self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
         self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
 
@@ -39,17 +39,21 @@ class Trainer(BaseTrainer):
         """
         self.model.train()
         self.train_metrics.reset()
+        # TODO in AutoEncoder, data and target are the same, so we can remove target
+        # TODO set-up the dataset and dataloader
         for batch_idx, (data, target) in enumerate(self.data_loader):
             data, target = data.to(self.device), target.to(self.device)
-
             self.optimizer.zero_grad()
             output = self.model(data)
+            # TODO check where to import the loss function as the criterion
             loss = self.criterion(output, target)
             loss.backward()
             self.optimizer.step()
 
+            # TODO replace self.writer with wandb
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.train_metrics.update('loss', loss.item())
+            # TODO check where to set-up the metric_ftns and its items
             for met in self.metric_ftns:
                 self.train_metrics.update(met.__name__, met(output, target))
 
@@ -108,3 +112,4 @@ class Trainer(BaseTrainer):
             current = batch_idx
             total = self.len_epoch
         return base.format(current, total, 100.0 * current / total)
+
