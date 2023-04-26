@@ -12,6 +12,7 @@ def main(config):
     logger = config.get_logger('test')
 
     # setup data_loader instances
+    # NOTE the test set needs to be set beforehand e.g. in dataset.py
     data_loader = getattr(module_data, config['data_loader']['type'])(
         config['data_loader']['args']['data_dir'],
         batch_size=512,
