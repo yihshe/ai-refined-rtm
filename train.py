@@ -9,7 +9,7 @@ import model.model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
-
+import wandb
 
 # fix random seeds for reproducibility
 SEED = 123
@@ -17,6 +17,7 @@ torch.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
+
 
 def main(config):
     logger = config.get_logger('train')
@@ -43,7 +44,8 @@ def main(config):
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
-    lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
+    lr_scheduler = config.init_obj(
+        'lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
     trainer = Trainer(model, criterion, metrics, optimizer,
                       config=config,
@@ -68,8 +70,20 @@ if __name__ == '__main__':
     # custom cli options to modify configuration from default values given in json file.
     CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
     options = [
-        CustomArgs(['--lr', '--learning_rate'], type=float, target='optimizer;args;lr'),
-        CustomArgs(['--bs', '--batch_size'], type=int, target='data_loader;args;batch_size')
+        CustomArgs(['--lr', '--learning_rate'],
+                   type=float, target='optimizer;args;lr'),
+        CustomArgs(['--bs', '--batch_size'], type=int,
+                   target='data_loader;args;batch_size')
     ]
     config = ConfigParser.from_args(args, options)
+
+    wandb.init(
+        project="ai-refined-rtm",
+        entity="yihshe",
+        name=f"simple-ae-{config['arch']['args']['hidden_dim']}",
+        config=config,
+    )
+
     main(config)
+
+    wandb.finish()

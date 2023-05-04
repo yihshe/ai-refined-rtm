@@ -49,6 +49,7 @@ def main(config):
         for i, (data, target) in enumerate(tqdm(data_loader)):
             data, target = data.to(device), target.to(device)
             output = model(data)
+            # TODO function to save the latent output
 
             #
             # save sample images, or do something with output here
