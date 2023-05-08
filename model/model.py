@@ -41,13 +41,6 @@ class VanillaAE(BaseModel):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.encoder = nn.Sequential(
-            # nn.Linear(input_dim, 64),
-            # nn.ReLU(),
-            # nn.Linear(64, 32),
-            # nn.ReLU(),
-            # nn.Linear(32, hidden_dim),
-            # nn.ReLU(),
-            # NOTE the above is the original encoder
             nn.Linear(input_dim, 64),
             nn.ReLU(),
             nn.Linear(64, 32),
@@ -57,13 +50,6 @@ class VanillaAE(BaseModel):
         )
         # TODO replace the encoder with the fixed RTM from rtm.py
         self.decoder = nn.Sequential(
-            # nn.Linear(hidden_dim, 32),
-            # nn.ReLU(),
-            # nn.Linear(32, 64),
-            # nn.ReLU(),
-            # nn.Linear(64, input_dim),
-            # nn.ReLU(),
-            # NOTE the above is the original decoder
             nn.Linear(hidden_dim, 32),
             nn.ReLU(),
             nn.Linear(32, 64),
@@ -88,7 +74,3 @@ class VanillaAE(BaseModel):
         x = self.encode(x)
         x = self.decode(x)
         return x
-
-    # def loss_function(self, x, x_hat):
-    #     # compute the mean squared error between input and output
-    #     return F.mse_loss(x_hat, x)

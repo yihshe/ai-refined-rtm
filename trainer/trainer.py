@@ -51,15 +51,18 @@ class Trainer(BaseTrainer):
             target = data_dict['spectrum'].to(self.device)
             self.optimizer.zero_grad()
             output = self.model(data)
-            # TODO check where to import the loss function as the criterion
             loss = self.criterion(output, target)
             loss.backward()
             self.optimizer.step()
 
-            # TODO replace self.writer with wandb
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.train_metrics.update('loss', loss.item())
-            # TODO check where to set-up the metric_ftns and its items
+
+            # log the loss to wandb
+            metrics_per_step = {'train_step/train_loss': loss.item()}
+            wandb.log(metrics_per_step,
+                      step=(epoch - 1) * self.len_epoch + batch_idx)
+
             for met in self.metric_ftns:
                 self.train_metrics.update(met.__name__, met(output, target))
 
@@ -70,17 +73,28 @@ class Trainer(BaseTrainer):
                     loss.item()))
                 self.writer.add_image('input', make_grid(
                     data.cpu(), nrow=8, normalize=True))
+                # add line plot of the data and output to wandb
 
             if batch_idx == self.len_epoch:
                 break
         log = self.train_metrics.result()
 
+        # log the train loss to wandb
+        metrics_per_epoch = {'train_epoch/train_loss': log['loss']}
+
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
             log.update(**{'val_'+k: v for k, v in val_log.items()})
+            # log the validation loss to wandb
+            metrics_per_epoch.update({'train_epoch/val_loss': val_log['loss']})
 
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
+            # log the learning rate to wandb
+            metrics_per_epoch.update(
+                {'train_epoch/lr': self.lr_scheduler.get_lr()}
+            )
+        wandb.log(metrics_per_epoch, step=epoch*self.len_epoch)
         return log
 
     def _valid_epoch(self, epoch):

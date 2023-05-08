@@ -80,7 +80,7 @@ if __name__ == '__main__':
     wandb.init(
         project="ai-refined-rtm",
         entity="yihshe",
-        name=f"simple-ae-{config['arch']['args']['hidden_dim']}",
+        name=f"vanilla-ae-{config['arch']['args']['hidden_dim']}",
         config=config,
     )
 

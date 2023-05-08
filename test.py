@@ -14,11 +14,11 @@ def main(config):
     # setup data_loader instances
     # NOTE the test set needs to be set beforehand e.g. in dataset.py
     data_loader = getattr(module_data, config['data_loader']['type'])(
-        config['data_loader']['args']['data_dir'],
+        config['data_loader']['args']['data_dir_test'],
         batch_size=512,
         shuffle=False,
         validation_split=0.0,
-        training=False,
+        # training=False,
         num_workers=2
     )
 
@@ -46,10 +46,15 @@ def main(config):
     total_metrics = torch.zeros(len(metric_fns))
 
     with torch.no_grad():
-        for i, (data, target) in enumerate(tqdm(data_loader)):
-            data, target = data.to(device), target.to(device)
+        # for i, (data, target) in enumerate(tqdm(data_loader)):
+        #     data, target = data.to(device), target.to(device)
+        for batch_idx, data_dict in enumerate(data_loader):
+            data = data_dict['spectrum'].to(device)
+            target = data_dict['spectrum'].to(device)
             output = model(data)
-            # TODO function to save the latent output
+            # TODO save the output with other data_dict info
+            # TODO calculate the loss per band
+            # TODO plot the bar chart of the loss per band to wandb?
 
             #
             # save sample images, or do something with output here
