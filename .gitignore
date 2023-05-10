@@ -107,6 +107,7 @@ ENV/
 data/
 input/
 saved/
+wandb/
 # datasets/
 
 # editor, os cache directory

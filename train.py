@@ -82,6 +82,7 @@ if __name__ == '__main__':
         entity="yihshe",
         name=f"vanilla-ae-{config['arch']['args']['hidden_dim']}",
         config=config,
+        mode="online" if config['trainer']['wandb'] else "disabled",
     )
 
     main(config)

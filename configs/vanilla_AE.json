@@ -12,12 +12,12 @@
         "type": "SpectrumS2DataLoader",
         "args": {
             "data_dir": "data/BPWW_extract_2018_reshaped_train.csv",
-            "data_dir_test": "data/BPWW_extract_2018_reshaped_test.csv",
             "batch_size": 64,
             "shuffle": true,
             "validation_split": 0.2,
             "num_workers": 2
-        }
+        },
+        "data_dir_test": "data/BPWW_extract_2018_reshaped_test.csv"
     },
     "optimizer": {
         "type": "Adam",
@@ -43,6 +43,7 @@
         "verbosity": 2,
         "monitor": "min val_loss",
         "early_stop": 10,
-        "tensorboard": true
+        "tensorboard": false,
+        "wandb": false
     }
 }
