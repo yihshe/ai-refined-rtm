@@ -44,6 +44,6 @@
         "monitor": "min val_loss",
         "early_stop": 10,
         "tensorboard": false,
-        "wandb": false
+        "wandb": true
     }
 }

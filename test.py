@@ -6,6 +6,8 @@ import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
 from parse_config import ConfigParser
+import pandas as pd
+import numpy as np
 
 
 def main(config):
@@ -45,6 +47,12 @@ def main(config):
     total_loss = 0.0
     total_metrics = torch.zeros(len(metric_fns))
 
+    # analyze the reconstruction loss per band
+    S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
+                'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
+                'B12_SWI2']
+    loss_analyzer = {}
+
     with torch.no_grad():
         # for i, (data, target) in enumerate(tqdm(data_loader)):
         #     data, target = data.to(device), target.to(device)
@@ -52,13 +60,29 @@ def main(config):
             data = data_dict['spectrum'].to(device)
             target = data_dict['spectrum'].to(device)
             output = model(data)
-            # TODO save the output with other data_dict info
-            # TODO calculate the loss per band
-            # TODO plot the bar chart of the loss per band to wandb?
 
             #
             # save sample images, or do something with output here
             #
+
+            # concatenate the loss per band to the loss_analyzer
+            loss_per_band = torch.square(output-target)
+            if batch_idx == 0:
+                loss_analyzer['loss_per_band'] = loss_per_band
+                loss_analyzer['sample_id'] = data_dict['sample_id']
+                loss_analyzer['class'] = data_dict['class']
+                loss_analyzer['date'] = data_dict['date']
+            else:
+                loss_analyzer['loss_per_band'] = torch.cat((
+                    loss_analyzer['loss_per_band'], loss_per_band
+                ), dim=0)
+                loss_analyzer['sample_id'] = torch.cat((
+                    loss_analyzer['sample_id'], data_dict['sample_id']
+                ), dim=0)
+                loss_analyzer['class'] = loss_analyzer['class'] + \
+                    data_dict['class']
+                loss_analyzer['date'] = loss_analyzer['date'] + \
+                    data_dict['date']
 
             # computing loss, metrics on test set
             loss = loss_fn(output, target)
@@ -70,9 +94,19 @@ def main(config):
     n_samples = len(data_loader.sampler)
     log = {'loss': total_loss / n_samples}
     log.update({
-        met.__name__: total_metrics[i].item() / n_samples for i, met in enumerate(metric_fns)
+        met.__name__: total_metrics[i].item() / n_samples
+        for i, met in enumerate(metric_fns)
     })
     logger.info(log)
+
+    # save the loss_analyzer to csv using pandas
+    df = pd.DataFrame(columns=S2_BANDS,
+                      data=loss_analyzer['loss_per_band'].cpu().numpy())
+    df['sample_id'] = loss_analyzer['sample_id'].cpu().numpy()
+    df['class'] = loss_analyzer['class']
+    df['date'] = loss_analyzer['date']
+    df.to_csv(str(config.resume).split('.pth')[0]+'_loss_analyzer.csv',
+              index=False)
 
 
 if __name__ == '__main__':
