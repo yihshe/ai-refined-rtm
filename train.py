@@ -24,7 +24,15 @@ def main(config):
 
     # setup data_loader instances
     data_loader = config.init_obj('data_loader', module_data)
-    valid_data_loader = data_loader.split_validation()
+    # valid_data_loader = data_loader.split_validation()
+    valid_data_loader = getattr(module_data, config['data_loader']['type'])(
+        config['data_loader']['data_dir_valid'],
+        batch_size=64,
+        shuffle=True,
+        validation_split=0.0,
+        # training=False,
+        num_workers=2
+    )
 
     # build model architecture, then print to console
     model = config.init_obj('arch', module_arch)

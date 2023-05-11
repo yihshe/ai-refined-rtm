@@ -1,6 +1,8 @@
 from torchvision import datasets, transforms
 from base import BaseDataLoader
 from datasets.spectrumS2 import SpectrumS2
+import numpy as np
+import torch
 
 
 class MnistDataLoader(BaseDataLoader):
