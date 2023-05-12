@@ -108,6 +108,7 @@ data/
 input/
 saved/
 wandb/
+.nfs00000000017f6ee30001c665
 # datasets/
 
 # editor, os cache directory
