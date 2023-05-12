@@ -1,0 +1,49 @@
+{
+    "name": "VanillaAE",
+    "n_gpu": 1,
+    "arch": {
+        "type": "VanillaAE",
+        "args": {
+            "input_dim": 11,
+            "hidden_dim": 16
+        }
+    },
+    "data_loader": {
+        "type": "SpectrumS2DataLoader",
+        "args": {
+            "data_dir": "data/BPWW_extract_2018_reshaped_train_valid.csv",
+            "batch_size": 64,
+            "shuffle": true,
+            "validation_split": 0.2,
+            "num_workers": 2
+        },
+        "data_dir_test": "data/BPWW_extract_2018_reshaped_test.csv"
+    },
+    "optimizer": {
+        "type": "Adam",
+        "args": {
+            "lr": 0.001,
+            "weight_decay": 0,
+            "amsgrad": true
+        }
+    },
+    "loss": "mse_loss",
+    "metrics": [],
+    "lr_scheduler": {
+        "type": "StepLR",
+        "args": {
+            "step_size": 50,
+            "gamma": 0.1
+        }
+    },
+    "trainer": {
+        "epochs": 100,
+        "save_dir": "saved/",
+        "save_period": 10,
+        "verbosity": 2,
+        "monitor": "min val_loss",
+        "early_stop": 10,
+        "tensorboard": false,
+        "wandb": false
+    }
+}
