@@ -1,4 +1,4 @@
-# PyTorch Template Project
+# AI-refined radiative transfer modelling to retrieve biophysical variables in forests
 PyTorch deep learning project made easy.
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
