@@ -11,7 +11,7 @@
     "data_loader": {
         "type": "SpectrumS2DataLoader",
         "args": {
-            "data_dir": "data/BPWW_extract_2018_reshaped_train.csv",
+            "data_dir": "data/BPWW_extract_2018_reshaped_train_valid.csv",
             "batch_size": 64,
             "shuffle": true,
             "validation_split": 0.2,
