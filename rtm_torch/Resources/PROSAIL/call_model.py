@@ -162,3 +162,99 @@ class CallModel:
                                         self.sail_tts_trans, self.sail_tto_trans)
 
         return inform
+
+# The class "Init_Model" initializes the models
+
+
+class InitModel:
+
+    # __init__ contains default values, but it is recommended to provide actual values for it
+    def __init__(self, lop="prospectD", canopy_arch=None, int_boost=1, nodat=-999, s2s="default"):
+        self._dir = os.path.dirname(os.path.realpath(
+            __file__))  # get current directory
+        os.chdir(self._dir)  # change into current directory
+        self.lop = lop
+        self.canopy_arch = canopy_arch
+        # boost [0...1] of PROSAIL, e.g. int_boos = 10000 -> [0...10000] (EnMAP-default!)
+        self.int_boost = int_boost
+        self.nodat = nodat
+        # which sensor type? Default = Prosail out; "EnMAP", "Sentinel2", "Landsat8" etc.
+        self.s2s = s2s
+        # "sort" (LUT contains multiple geos) vs. "no geo" (LUT contains ONE Geo)
+        self.geo_mode = None
+        self.soil = None  # initialize empty
+
+        # List of names of all parameters in order in which they are written into the LUT; serves as labels for output
+        self.para_names = ["N", "cab", "car", "anth", "cbrown", "cw", "cm", "cp", "cbc",
+                           "LAI", "typeLIDF", "LIDF", "hspot", "psoil", "tts", "tto",
+                           "psi", "LAIu", "cd", "sd", "h"]
+
+        # Initialize the spectrum to sensor conversion if a sensor is chosen
+        if self.s2s != "default":
+            self.s2s_I = Spec2Sensor(sensor=self.s2s, nodat=self.nodat)
+            sensor_init_success = self.s2s_I.init_sensor()
+            if not sensor_init_success:
+                raise Exception(
+                    "Could not convert spectra to sensor resolution!")
+
+    def initialize_multiple_simple(self, soil=None, **paras):
+        # simple tests for vectorized versions
+        self.soil = soil
+        nparas = len(paras['LAI'])
+        para_grid = torch.empty(
+            (nparas, len(paras.keys())), dtype=torch.float32)
+        for run in range(nparas):
+            for ikey, key in enumerate(self.para_names):
+                para_grid[run, ikey] = paras[key][run]
+
+        self.run_model(paras=dict(zip(self.para_names, para_grid.T)))
+
+    def initialize_single(self, soil=None, **paras):
+        # Initialize a single run of PROSAIL (simplification for building of para_grid)
+        self.soil = soil
+        # if self.s2s != "default":
+        #     self.s2s_I = Spec2Sensor(sensor=self.s2s, nodat=self.nodat)
+        #     sensor_init_success = self.s2s_I.init_sensor()
+        #     if not sensor_init_success:
+        #         raise Exception(
+        #             "Could not convert spectra to sensor resolution!")
+
+        # shape 1 for single run
+        para_grid = torch.empty((1, len(paras.keys())))
+        for ikey, key in enumerate(self.para_names):
+            para_grid[0, ikey] = paras[key]
+        return self.run_model(paras=dict(zip(self.para_names, para_grid.T)))
+
+    def run_model(self, paras):
+        # Execution of PROSAIL
+        # Create new instance of CallModel
+        i_model = CallModel(soil=self.soil, paras=paras)
+
+        # 1: Call one of the Prospect-Versions
+        if self.lop == "prospect4":
+            i_model.call_prospect4()
+        elif self.lop == "prospect5":
+            i_model.call_prospect5()
+        elif self.lop == "prospect5B":
+            i_model.call_prospect5b()
+        elif self.lop == "prospectD":
+            i_model.call_prospectD()
+        elif self.lop == "prospectPro":
+            i_model.call_prospectPro()
+        else:
+            print("Unknown Prospect version. Try 'prospect4', 'prospect5', 'prospect5B' or 'prospectD' or ProspectPro")
+            return
+
+        # 2: If chosen, call one of the SAIL-versions and multiply with self.int_boost
+        if self.canopy_arch == "sail":
+            result = i_model.call_4sail() * self.int_boost
+        elif self.canopy_arch == "inform":
+            result = i_model.call_inform() * self.int_boost
+        else:
+            result = i_model.prospect[:, :, 1] * self.int_boost
+
+        if self.s2s == "default":
+            return result
+        else:
+            # if a sensor is chosen, run the Spectral Response Function now
+            return self.s2s_I.run_srf(result)

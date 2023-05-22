@@ -31,9 +31,9 @@ import os
 import numpy as np
 from scipy.interpolate import interp1d
 
-from rtm.Resources.PROSAIL import call_model as mod
-from rtm.Resources.Spec2Sensor.Spec2Sensor_core import Spec2Sensor, BuildTrueSRF, BuildGenericSRF
-from rtm import APP_DIR
+from rtm_torch.Resources.PROSAIL import call_model as mod
+from rtm_torch.Resources.Spec2Sensor.Spec2Sensor_core import Spec2Sensor, BuildTrueSRF, BuildGenericSRF
+from rtm_torch import APP_DIR
 
 import warnings
 warnings.filterwarnings('ignore')  # ignore warnings, like ZeroDivision
@@ -175,14 +175,14 @@ class RTM:
         selected settings
         """
         # create new Instance of the RTM
+        # TODO reset int_boost to 10000.0 for future evaluations
         mod_I = mod.InitModel(
             lop=self.lop, canopy_arch=self.canopy_arch, nodat=-999,
             int_boost=1.0, s2s=self.sensor
         )
         # initialize a single model run
-        # TODO decide which parameters are learnable or to be learned
-        # TODO how to bound the parameters range during the learning process?
-        self.myResult = mod_I.initialize_single(tts=self.para_dict["tts"],
+        self.myResult = mod_I.initialize_single(soil=self.bg_spec,
+                                                tts=self.para_dict["tts"],
                                                 tto=self.para_dict["tto"],
                                                 psi=self.para_dict["psi"],
                                                 N=self.para_dict["N"],
@@ -199,7 +199,6 @@ class RTM:
                                                 car=self.para_dict["car"],
                                                 cbrown=self.para_dict["cbrown"],
                                                 anth=self.para_dict["anth"],
-                                                soil=self.bg_spec,
                                                 LAIu=self.para_dict["LAIu"],
                                                 cd=self.para_dict["cd"],
                                                 sd=self.para_dict["sd"],
