@@ -32,7 +32,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from rtm_torch.Resources.PROSAIL import call_model as mod
-from rtm_torch.Resources.Spec2Sensor.Spec2Sensor_core import Spec2Sensor, BuildTrueSRF, BuildGenericSRF
+from rtm_torch.Resources.Spec2Sensor.Spec2Sensor_core import Spec2Sensor
 from rtm_torch import APP_DIR
 
 import warnings
@@ -165,41 +165,66 @@ class RTM:
         # TODO should we bound the range of parameters in model training?
         # or should the model just learn a scale factor as in Pheno-VAE?
         self.para_dict.update(para_dict)
-        pass
+        # print("Parameters updated!")
 
     # execute the model to run the radiative transfer model
-    def mod_exec(self):
+    def mod_exec(self, mode="single"):
         """
         This function is called whenever PROSAIL is to be triggered; 
         it is the function to sort all inputs and call PROSAIL with the 
         selected settings
         """
+        assert mode in ["single", "batch"]
         # create new Instance of the RTM
         # TODO reset int_boost to 10000.0 for future evaluations
         mod_I = mod.InitModel(
             lop=self.lop, canopy_arch=self.canopy_arch, nodat=-999,
             int_boost=1.0, s2s=self.sensor
         )
-        # initialize a single model run
-        self.myResult = mod_I.initialize_single(soil=self.bg_spec,
-                                                tts=self.para_dict["tts"],
-                                                tto=self.para_dict["tto"],
-                                                psi=self.para_dict["psi"],
-                                                N=self.para_dict["N"],
-                                                cab=self.para_dict["cab"],
-                                                cw=self.para_dict["cw"],
-                                                cm=self.para_dict["cm"],
-                                                LAI=self.para_dict["LAI"],
-                                                LIDF=self.para_dict["LIDF"],
-                                                typeLIDF=self.para_dict["typeLIDF"],
-                                                hspot=self.para_dict["hspot"],
-                                                psoil=self.para_dict["psoil"],
-                                                cp=self.para_dict["cp"],
-                                                cbc=self.para_dict["cbc"],
-                                                car=self.para_dict["car"],
-                                                cbrown=self.para_dict["cbrown"],
-                                                anth=self.para_dict["anth"],
-                                                LAIu=self.para_dict["LAIu"],
-                                                cd=self.para_dict["cd"],
-                                                sd=self.para_dict["sd"],
-                                                h=self.para_dict["h"])[0, :]
+        if mode == "single":
+            # initialize a single model run
+            self.myResult = mod_I.initialize_single(soil=self.bg_spec,
+                                                    tts=self.para_dict["tts"],
+                                                    tto=self.para_dict["tto"],
+                                                    psi=self.para_dict["psi"],
+                                                    N=self.para_dict["N"],
+                                                    cab=self.para_dict["cab"],
+                                                    cw=self.para_dict["cw"],
+                                                    cm=self.para_dict["cm"],
+                                                    LAI=self.para_dict["LAI"],
+                                                    LIDF=self.para_dict["LIDF"],
+                                                    typeLIDF=self.para_dict["typeLIDF"],
+                                                    hspot=self.para_dict["hspot"],
+                                                    psoil=self.para_dict["psoil"],
+                                                    cp=self.para_dict["cp"],
+                                                    cbc=self.para_dict["cbc"],
+                                                    car=self.para_dict["car"],
+                                                    cbrown=self.para_dict["cbrown"],
+                                                    anth=self.para_dict["anth"],
+                                                    LAIu=self.para_dict["LAIu"],
+                                                    cd=self.para_dict["cd"],
+                                                    sd=self.para_dict["sd"],
+                                                    h=self.para_dict["h"])[0, :]
+        elif mode == "batch":
+            self.myResult = mod_I.initialize_multiple_simple(soil=self.bg_spec,
+                                                             tts=self.para_dict["tts"],
+                                                             tto=self.para_dict["tto"],
+                                                             psi=self.para_dict["psi"],
+                                                             N=self.para_dict["N"],
+                                                             cab=self.para_dict["cab"],
+                                                             cw=self.para_dict["cw"],
+                                                             cm=self.para_dict["cm"],
+                                                             LAI=self.para_dict["LAI"],
+                                                             LIDF=self.para_dict["LIDF"],
+                                                             typeLIDF=self.para_dict["typeLIDF"],
+                                                             hspot=self.para_dict["hspot"],
+                                                             psoil=self.para_dict["psoil"],
+                                                             cp=self.para_dict["cp"],
+                                                             cbc=self.para_dict["cbc"],
+                                                             car=self.para_dict["car"],
+                                                             cbrown=self.para_dict["cbrown"],
+                                                             anth=self.para_dict["anth"],
+                                                             LAIu=self.para_dict["LAIu"],
+                                                             cd=self.para_dict["cd"],
+                                                             sd=self.para_dict["sd"],
+                                                             h=self.para_dict["h"])

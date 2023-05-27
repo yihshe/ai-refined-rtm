@@ -34,8 +34,8 @@ class Sail:
         self.costto = np.cos(tto)
         self.cospsi = np.cos(psi)
 
-    def pro4sail(self, rho, tau, LIDF, TypeLIDF, LAI, hspot, psoil, soil, understory=None, skyl=None,
-                 inform_trans=None):
+    def pro4sail(self, rho, tau, LIDF, TypeLIDF, LAI, hspot, psoil, soil,
+                 understory=None, skyl=None, inform_trans=None):
 
         if inform_trans == 'tto':
             self.tts = self.tto

@@ -207,7 +207,7 @@ class InitModel:
             for ikey, key in enumerate(self.para_names):
                 para_grid[run, ikey] = paras[key][run]
 
-        self.run_model(paras=dict(zip(self.para_names, para_grid.T)))
+        return self.run_model(paras=dict(zip(self.para_names, para_grid.T)))
 
     def initialize_single(self, soil=None, **paras):
         # Initialize a single run of PROSAIL (simplification for building of para_grid)
@@ -220,6 +220,7 @@ class InitModel:
         #             "Could not convert spectra to sensor resolution!")
 
         # shape 1 for single run
+        # TODO para_grid also needs to be put on device
         para_grid = torch.empty((1, len(paras.keys())))
         for ikey, key in enumerate(self.para_names):
             para_grid[0, ikey] = paras[key]

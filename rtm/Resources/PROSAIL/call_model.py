@@ -357,6 +357,13 @@ class InitModel:
                            "LAI", "typeLIDF", "LIDF", "hspot", "psoil", "tts", "tto",
                            "psi", "LAIu", "cd", "sd", "h"]
 
+        # Initialize the spectrum to sensor conversion if a sensor is chosen
+        if not self.s2s == "default":
+            self.s2s_I = Spec2Sensor(sensor=self.s2s, nodat=self.nodat)
+            sensor_init_success = self.s2s_I.init_sensor()
+            if not sensor_init_success:
+                exit("Could not convert spectra to sensor resolution!")
+
     def initialize_multiple_simple(self, soil=None, **paras):
         # simple tests for vectorized versions
         self.soil = soil
@@ -366,7 +373,7 @@ class InitModel:
             for ikey, key in enumerate(self.para_names):
                 para_grid[run, ikey] = paras[key][run]
 
-        self.run_model(paras=dict(zip(self.para_names, para_grid.T)))
+        return self.run_model(paras=dict(zip(self.para_names, para_grid.T)))
 
     def initialize_vectorized(self, LUT_dir, LUT_name, ns, max_per_file=5000, soil=None,
                               prgbar_widget=None, qgis_app=None, depends=False, testmode=False, **paras):
@@ -570,14 +577,14 @@ class InitModel:
             prgbar_widget.gui.prgBar.setValue(100)
             prgbar_widget.gui.close()
 
-    def initialize_single(self, **paras):
+    def initialize_single(self, soil=None, **paras):
         # Initialize a single run of PROSAIL (simplification for building of para_grid)
-        self.soil = paras["soil"]
-        if not self.s2s == "default":
-            self.s2s_I = Spec2Sensor(sensor=self.s2s, nodat=self.nodat)
-            sensor_init_success = self.s2s_I.init_sensor()
-            if not sensor_init_success:
-                exit("Could not convert spectra to sensor resolution!")
+        self.soil = soil
+        # if not self.s2s == "default":
+        #     self.s2s_I = Spec2Sensor(sensor=self.s2s, nodat=self.nodat)
+        #     sensor_init_success = self.s2s_I.init_sensor()
+        #     if not sensor_init_success:
+        #         exit("Could not convert spectra to sensor resolution!")
 
         para_grid = np.empty(shape=(1, len(paras.keys()))
                              )  # shape 1 for single run
