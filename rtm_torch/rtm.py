@@ -90,7 +90,7 @@ class RTM:
         # Default soil spectrum without loading background spectrum
         self.bg_type = "default"
         self.bg_spec = None
-        # Brightness Factor (psoil) when using default soil spectrum
+        # Brightness Factor (psoil) -f when using default soil spectrum
         self.para_dict["psoil"] = 0.8
 
         # Leaf Model Parameters
@@ -184,47 +184,7 @@ class RTM:
         if mode == "single":
             # initialize a single model run
             self.myResult = mod_I.initialize_single(soil=self.bg_spec,
-                                                    tts=self.para_dict["tts"],
-                                                    tto=self.para_dict["tto"],
-                                                    psi=self.para_dict["psi"],
-                                                    N=self.para_dict["N"],
-                                                    cab=self.para_dict["cab"],
-                                                    cw=self.para_dict["cw"],
-                                                    cm=self.para_dict["cm"],
-                                                    LAI=self.para_dict["LAI"],
-                                                    LIDF=self.para_dict["LIDF"],
-                                                    typeLIDF=self.para_dict["typeLIDF"],
-                                                    hspot=self.para_dict["hspot"],
-                                                    psoil=self.para_dict["psoil"],
-                                                    cp=self.para_dict["cp"],
-                                                    cbc=self.para_dict["cbc"],
-                                                    car=self.para_dict["car"],
-                                                    cbrown=self.para_dict["cbrown"],
-                                                    anth=self.para_dict["anth"],
-                                                    LAIu=self.para_dict["LAIu"],
-                                                    cd=self.para_dict["cd"],
-                                                    sd=self.para_dict["sd"],
-                                                    h=self.para_dict["h"])[0, :]
+                                                    **self.para_dict)[0, :]
         elif mode == "batch":
             self.myResult = mod_I.initialize_multiple_simple(soil=self.bg_spec,
-                                                             tts=self.para_dict["tts"],
-                                                             tto=self.para_dict["tto"],
-                                                             psi=self.para_dict["psi"],
-                                                             N=self.para_dict["N"],
-                                                             cab=self.para_dict["cab"],
-                                                             cw=self.para_dict["cw"],
-                                                             cm=self.para_dict["cm"],
-                                                             LAI=self.para_dict["LAI"],
-                                                             LIDF=self.para_dict["LIDF"],
-                                                             typeLIDF=self.para_dict["typeLIDF"],
-                                                             hspot=self.para_dict["hspot"],
-                                                             psoil=self.para_dict["psoil"],
-                                                             cp=self.para_dict["cp"],
-                                                             cbc=self.para_dict["cbc"],
-                                                             car=self.para_dict["car"],
-                                                             cbrown=self.para_dict["cbrown"],
-                                                             anth=self.para_dict["anth"],
-                                                             LAIu=self.para_dict["LAIu"],
-                                                             cd=self.para_dict["cd"],
-                                                             sd=self.para_dict["sd"],
-                                                             h=self.para_dict["h"])
+                                                             **self.para_dict)
