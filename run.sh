@@ -10,4 +10,10 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume saved/models/VanillaAE_scaled/0510_211403/model_best.pth
 
 # Generate synthetic data from RTM
-python3 datasets/sampling/sampling.py
+# python3 datasets/sampling/sampling.py
+
+# Split the data into train and test
+python3 datasets/preprocessing/train_test_split.py
+
+# Standardize the data
+python3 datasets/preprocessing/standardize.py

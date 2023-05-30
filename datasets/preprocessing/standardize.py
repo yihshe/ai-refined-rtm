@@ -2,22 +2,27 @@ import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 import os
-import pdb
-pdb.set_trace()
 
 # Split the training data further into train and validation sets
 # Standardize all datasets according to the training set
-
-CSV_PATH = "/maps/ys611/ai-refined-rtm/data/BPWW_extract_2018_reshaped_train.csv"
-CSV_PATH2 = "/maps/ys611/ai-refined-rtm/data/BPWW_extract_2018_reshaped_test.csv"
+# CSV_PATH = "/maps/ys611/ai-refined-rtm/data/BPWW_extract_2018_reshaped_train.csv"
+# CSV_PATH2 = "/maps/ys611/ai-refined-rtm/data/BPWW_extract_2018_reshaped_test.csv"
+# S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
+#             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
+#             'B12_SWI2']
+# SAVE_PATH = '/maps/ys611/ai-refined-rtm/data/real'
+# ATTRS = ['class', 'sample_id', 'date']
+BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230529/'
+CSV_PATH = os.path.join(BASE_DIR, "synthetic_train_valid.csv")
+CSV_PATH2 = os.path.join(BASE_DIR, "synthetic_test.csv")
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
             'B12_SWI2']
-SAVE_PATH = '/maps/ys611/ai-refined-rtm/data/real'
 
-ATTRS = ['class', 'sample_id', 'date']
 df = pd.read_csv(CSV_PATH)
 df2 = pd.read_csv(CSV_PATH2)
+
+ATTRS = [k for k in df.columns if k not in S2_BANDS+['B01', 'B10']]
 
 n_samples = df.shape[0]
 # keep the random seed same as the one used in the training script
@@ -50,15 +55,26 @@ for attr in ATTRS:
 # save the mean and scale of the training set
 # np.save('/maps/ys611/ai-refined-rtm/data/train_mean.npy', scaler.mean_)
 # np.save('/maps/ys611/ai-refined-rtm/data/train_scale.npy', scaler.scale_)
+np.save(os.path.join(BASE_DIR, 'train_mean.npy'), scaler.mean_)
+np.save(os.path.join(BASE_DIR, 'train_scale.npy'), scaler.scale_)
 
 # save the scaled data
+# df_train_scaled.to_csv(
+#     os.path.join(SAVE_PATH, 'BPWW_extract_2018_reshaped_train_scaled.csv'),
+#     index=False)
+# df_valid_scaled.to_csv(
+#     os.path.join(SAVE_PATH, 'BPWW_extract_2018_reshaped_valid_scaled.csv'),
+#     index=False)
+# df_test_scaled.to_csv(
+#     os.path.join(SAVE_PATH, 'BPWW_extract_2018_reshaped_test_scaled.csv'),
+#     index=False)
 df_train_scaled.to_csv(
-    os.path.join(SAVE_PATH, 'BPWW_extract_2018_reshaped_train_scaled.csv'),
+    os.path.join(BASE_DIR, 'synthetic_train_scaled.csv'),
     index=False)
 df_valid_scaled.to_csv(
-    os.path.join(SAVE_PATH, 'BPWW_extract_2018_reshaped_valid_scaled.csv'),
+    os.path.join(BASE_DIR, 'synthetic_valid_scaled.csv'),
     index=False)
 df_test_scaled.to_csv(
-    os.path.join(SAVE_PATH, 'BPWW_extract_2018_reshaped_test_scaled.csv'),
+    os.path.join(BASE_DIR, 'synthetic_test_scaled.csv'),
     index=False)
 print('done')

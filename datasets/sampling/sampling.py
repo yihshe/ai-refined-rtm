@@ -5,7 +5,7 @@ from rtm_torch.rtm import RTM
 import pandas as pd
 torch.manual_seed(0)
 
-SAVE_PATH = "/maps/ys611/ai-refined-rtm/data/synthetic"
+SAVE_PATH = "/maps/ys611/ai-refined-rtm/data/synthetic/20230529"
 # B01 and B10 will not be used in the training
 S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
                  'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
@@ -93,7 +93,12 @@ def run_sampling():
     df = pd.DataFrame(spectrums.cpu().numpy(), columns=S2_FULL_BANDS)
     for attr in paras.keys():
         df[attr] = paras[attr].cpu().numpy()
-    df.to_csv(os.path.join(SAVE_PATH, "synthetic_20230529.csv"), index=False)
+
+    # mkdir if not exist
+    if not os.path.exists(SAVE_PATH):
+        os.makedirs(SAVE_PATH, exist_ok=True)
+    # save the dataset
+    df.to_csv(os.path.join(SAVE_PATH, "synthetic.csv"), index=False)
     print("Done!")
 
 

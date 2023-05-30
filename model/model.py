@@ -21,18 +21,8 @@ class MnistModel(BaseModel):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 
-# build a vanilla AutoEncoder based on BaseModel with the following architecture in PyTorch:
+# build a vanilla AutoEncoder (AE) with PyTorch
 # input -> encoder -> decoder -> output
-# input and output are the same 1-D vector of size input_dim less than 100
-# encoder is 3 fully connected layers with ReLU activation with suitable hidden dimensions as you see fit
-# the output of encoder is the latent vector of size hidden_dim
-# decoder is 3 fully connected layers with ReLU activation
-# the output of decoder is the reconstructed vector of size input_dim
-# the loss function is the mean squared error between input and output
-# the optimizer is Adam with learning rate 1e-3
-# the number of epochs is 100
-# the batch size is 128
-# build a class VanillaAE(BaseModel) in model.py
 
 
 class VanillaAE(BaseModel):
