@@ -3,12 +3,6 @@ import torch
 import torch.utils.data as data
 import numpy as np
 
-# TODO split the dataset into train and test sets.
-# The dataloaders for each set can be set up at the config file (with respective data path)
-# The validation set can be set up during the training process when creating the trainer object
-MEAN = np.load('/maps/ys611/ai-refined-rtm/data/train_mean.npy')
-SCALE = np.load('/maps/ys611/ai-refined-rtm/data/train_scale.npy')
-
 
 class SpectrumS2(data.Dataset):
     def __init__(self, csv_path, transform=None):

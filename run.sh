@@ -13,7 +13,10 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 datasets/sampling/sampling.py
 
 # Split the data into train and test
-python3 datasets/preprocessing/train_test_split.py
+# python3 datasets/preprocessing/train_test_split.py
 
 # Standardize the data
-python3 datasets/preprocessing/standardize.py
+# python3 datasets/preprocessing/standardize.py
+
+# Train a simple vanilla autoencoder with RTM
+python3 -m pdb train.py --config configs/vanilla_AE_RTM.json

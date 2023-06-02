@@ -42,7 +42,7 @@ warnings.filterwarnings('ignore')  # ignore warnings, like ZeroDivision
 # class RTM is the main class to run the Radiative Transfer Model
 
 
-class RTM:
+class RTM():
     def __init__(self):
         super(RTM, self).__init__()
         # store all model choices available for the user
