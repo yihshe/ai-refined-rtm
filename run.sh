@@ -19,4 +19,4 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 datasets/preprocessing/standardize.py
 
 # Train a simple vanilla autoencoder with RTM
-python3 -m pdb train.py --config configs/vanilla_AE_RTM.json
+python3 -m pdb train.py --config configs/vanilla_AE_RTM_debug.json

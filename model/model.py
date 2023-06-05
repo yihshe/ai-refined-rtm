@@ -1,3 +1,5 @@
+import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from base import BaseModel
@@ -75,7 +77,7 @@ class VanillaAE_RTM(BaseModel):
     input -> encoder (learnable) -> decoder (INFORM) -> output
     """
 
-    def __init__(self, input_dim, hidden_dim, rtm_para_names):
+    def __init__(self, input_dim, hidden_dim, rtm_para_names, standardization):
         super().__init__()
         assert hidden_dim == len(
             rtm_para_names), "hidden_dim must be equal to the number of RTM parameters"
@@ -103,6 +105,13 @@ class VanillaAE_RTM(BaseModel):
                          'B12_SWI2']
         self.bands_index = [i for i in range(
             len(S2_FULL_BANDS)) if S2_FULL_BANDS[i] not in ['B01', 'B10']]
+        # Mean and scale for standardization
+        self.device = self.device = torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu')
+        self.mean = torch.tensor(
+            np.load(standardization['mean'])).float().unsqueeze(0).to(self.device)
+        self.scale = torch.tensor(
+            np.load(standardization['scale'])).float().unsqueeze(0).to(self.device)
 
     #  define encode function to further process the output of encoder
     def encode(self, x):
@@ -117,7 +126,8 @@ class VanillaAE_RTM(BaseModel):
             max = self.rtm_para_names[para_name]['max']
             para_dict[para_name] = x[:, i]*(max-min)+min
         # TODO standardize the output of the decoder
-        return self.decoder.run(**para_dict)[:, self.bands_index]
+        output = self.decoder.run(**para_dict)[:, self.bands_index]
+        return (output-self.mean)/self.scale
 
     def forward(self, x):
         x = self.encode(x)

@@ -151,9 +151,9 @@ class RTM():
         # typeLIDF: Leaf Angle Distribution (LIDF) type: 1 = Beta, 2 = Ellipsoidal
         # if typeLIDF = 2, LIDF is set to between 0 and 90 as Leaf Angle to calculate the Ellipsoidal distribution
         # if typeLIDF = 1, LIDF is set between 0 and 5 as index of one of the six Beta distributions
-        self.para_dict["typeLIDF"] = 2
+        self.para_dict["typeLIDF"] = 2  # 2
         # LIDF: Leaf Angle (LIDF), only used when LIDF is Ellipsoidal
-        self.para_dict["LIDF"] = 30
+        self.para_dict["LIDF"] = 30  # 30
         # hspot: Hot Spot Size Parameter (Hspot)
         self.para_dict["hspot"] = 0.01
         # tto: Observation zenith angle (Tto)

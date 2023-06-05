@@ -5,6 +5,7 @@ from base import BaseTrainer
 from utils import inf_loop, MetricTracker
 import wandb
 from model.loss import mse_loss_per_band
+from IPython import embed
 
 
 class Trainer(BaseTrainer):
@@ -49,6 +50,7 @@ class Trainer(BaseTrainer):
         self.train_metrics.reset()
         # for batch_idx, (data, target) in enumerate(self.data_loader):
         #     data, target = data.to(self.device), target.to(self.device)
+        # torch.autograd.set_detect_anomaly(True)
 
         for batch_idx, data_dict in enumerate(self.data_loader):
             data = data_dict['spectrum'].to(self.device)
@@ -57,6 +59,13 @@ class Trainer(BaseTrainer):
             output = self.model(data)
             loss = self.criterion(output, target)
             loss.backward()
+            print(batch_idx, loss)
+            # paras = {k: v for k, v in self.model.named_parameters()}
+            # if batch_idx > 0 and (True in torch.isnan(paras['encoder.6.weight'].grad)):
+            #     print('encoder.6.weight.grad', [
+            #           paras['encoder.6.weight'].grad])
+            #     print('encoder.6.bias.grad', [paras['encoder.6.bias'].grad])
+            #     embed()
             self.optimizer.step()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
@@ -67,8 +76,8 @@ class Trainer(BaseTrainer):
             loss_per_band = mse_loss_per_band(output, target)
             metrics_per_step.update(
                 {f'train_step_band/train_loss_band{i}':
-                 loss_per_band[i].item()
-                 for i in range(loss_per_band.shape[0])}
+                    loss_per_band[i].item()
+                    for i in range(loss_per_band.shape[0])}
             )
             if batch_idx == 0:
                 self.train_loss_per_band = loss_per_band.view(1, -1)
@@ -80,7 +89,8 @@ class Trainer(BaseTrainer):
                       step=(epoch - 1) * self.len_epoch + batch_idx)
 
             for met in self.metric_ftns:
-                self.train_metrics.update(met.__name__, met(output, target))
+                self.train_metrics.update(
+                    met.__name__, met(output, target))
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
@@ -93,6 +103,7 @@ class Trainer(BaseTrainer):
 
             if batch_idx == self.len_epoch:
                 break
+
         log = self.train_metrics.result()
 
         # log the train loss to wandb

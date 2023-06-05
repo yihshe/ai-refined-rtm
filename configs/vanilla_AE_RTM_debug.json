@@ -5,7 +5,7 @@
         "type": "VanillaAE_RTM",
         "args": {
             "input_dim": 11,
-            "hidden_dim": 10,
+            "hidden_dim": 9,
             "rtm_para_names": {
                 "N": {
                     "min": 1.0,
@@ -26,10 +26,6 @@
                 "LAI": {
                     "min": 0.01,
                     "max": 15.0
-                },
-                "LIDF": {
-                    "min": 0.0,
-                    "max": 90.0
                 },
                 "LAIu": {
                     "min": 0.01,
