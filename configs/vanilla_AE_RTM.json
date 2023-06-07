@@ -49,8 +49,8 @@
                 }
             },
             "standardization": {
-                "mean": "/maps/ys611/ai-refined-rtm/data/real/train_mean.npy",
-                "scale": "/maps/ys611/ai-refined-rtm/data/real/train_scale.npy"
+                "mean": "/maps/ys611/ai-refined-rtm/data/real/train_x_mean.npy",
+                "scale": "/maps/ys611/ai-refined-rtm/data/real/train_x_scale.npy"
             }
         }
     },

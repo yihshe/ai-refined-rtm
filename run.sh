@@ -16,7 +16,12 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 datasets/preprocessing/train_test_split.py
 
 # Standardize the data
-# python3 datasets/preprocessing/standardize.py
+# python3 -m pdb datasets/preprocessing/standardize.py
 
 # Train a simple vanilla autoencoder with RTM
-python3 -m pdb train.py --config configs/vanilla_AE_RTM_debug.json
+python3 -m pdb train.py --config configs/vanilla_AE_RTM_debug.json 
+        # --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0605_183155/model_best.pth
+
+# Train NN Regressor
+# python3 -m pdb train.py --config configs/NN_regressor.json 
+

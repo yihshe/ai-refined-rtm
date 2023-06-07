@@ -92,12 +92,11 @@ class VanillaAE_RTM(BaseModel):
             nn.Linear(32, 16),
             nn.ReLU(),
             nn.Linear(16, hidden_dim),
-            # nn.ReLU(),
             nn.Sigmoid(),
         )
         # The decoder is the INFORM RTM with fixed parameters
         self.decoder = RTM()
-        # NOTE ["N", "cab", "cw", "cm", "LAI", "LIDF", "LAIu", "sd", "h", "cd"]
+        # NOTE ["N", "cab", "cw", "cm", "LAI", "LAIu", "sd", "h", "cd"]
         self.rtm_para_names = rtm_para_names
         S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
                          'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
@@ -108,10 +107,10 @@ class VanillaAE_RTM(BaseModel):
         # Mean and scale for standardization
         self.device = self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
-        self.mean = torch.tensor(
-            np.load(standardization['mean'])).float().unsqueeze(0).to(self.device)
-        self.scale = torch.tensor(
-            np.load(standardization['scale'])).float().unsqueeze(0).to(self.device)
+        self.x_mean = torch.tensor(
+            np.load(standardization['x_mean'])).float().unsqueeze(0).to(self.device)
+        self.x_scale = torch.tensor(
+            np.load(standardization['x_scale'])).float().unsqueeze(0).to(self.device)
 
     #  define encode function to further process the output of encoder
     def encode(self, x):
@@ -119,15 +118,14 @@ class VanillaAE_RTM(BaseModel):
 
     #  define decode function to further process the output of decoder
     def decode(self, x):
-        # return self.decoder(x)
         para_dict = {}
         for i, para_name in enumerate(self.rtm_para_names.keys()):
             min = self.rtm_para_names[para_name]['min']
             max = self.rtm_para_names[para_name]['max']
             para_dict[para_name] = x[:, i]*(max-min)+min
-        # TODO standardize the output of the decoder
+
         output = self.decoder.run(**para_dict)[:, self.bands_index]
-        return (output-self.mean)/self.scale
+        return (output-self.x_mean)/self.x_scale
 
     def forward(self, x):
         x = self.encode(x)
@@ -153,6 +151,8 @@ class NNRegressor(BaseModel):
             nn.Linear(32, 16),
             nn.ReLU(),
             nn.Linear(16, hidden_dim),
+            # nn.Softplus(),
+            # nn.ReLU(),
         )
 
     #  define encode function to further process the output of encoder

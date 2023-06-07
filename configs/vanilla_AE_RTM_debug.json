@@ -45,8 +45,10 @@
                 }
             },
             "standardization": {
-                "mean": "/maps/ys611/ai-refined-rtm/data/real/train_mean.npy",
-                "scale": "/maps/ys611/ai-refined-rtm/data/real/train_scale.npy"
+                "x_mean": "/maps/ys611/ai-refined-rtm/data/real/train_x_mean.npy",
+                "x_scale": "/maps/ys611/ai-refined-rtm/data/real/train_x_scale.npy",
+                "y_mean": "/maps/ys611/ai-refined-rtm/data/synthetic/20230529/train_y_mean.npy",
+                "y_scale": "/maps/ys611/ai-refined-rtm/data/synthetic/20230529/train_y_scale.npy"
             }
         }
     },
@@ -66,7 +68,7 @@
         "type": "Adam",
         "args": {
             "lr": 0.001,
-            "weight_decay": 0,
+            "weight_decay": 1e-4,
             "amsgrad": true
         }
     },

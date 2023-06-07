@@ -34,29 +34,59 @@ np.random.shuffle(idx_full)
 valid_idx = idx_full[0:len_valid]
 train_idx = np.delete(idx_full, np.arange(0, len_valid))
 
-df_valid = df[S2_BANDS].iloc[valid_idx]
-df_train = df[S2_BANDS].iloc[train_idx]
-df_test = df2[S2_BANDS]
 
-scaler = preprocessing.StandardScaler().fit(df_train)
-df_train_scaled = scaler.transform(df_train)
-df_valid_scaled = scaler.transform(df_valid)
-df_test_scaled = scaler.transform(df_test)
+def standardize(df, df2, columns):
+    df_valid = df[columns].iloc[valid_idx]
+    df_train = df[columns].iloc[train_idx]
+    df_test = df2[columns]
+
+    scaler = preprocessing.StandardScaler().fit(df_train)
+    df_train_scaled = scaler.transform(df_train)
+    df_valid_scaled = scaler.transform(df_valid)
+    df_test_scaled = scaler.transform(df_test)
+
+    return scaler, df_train_scaled, df_valid_scaled, df_test_scaled
 
 
-df_train_scaled = pd.DataFrame(df_train_scaled, columns=S2_BANDS)
-df_valid_scaled = pd.DataFrame(df_valid_scaled, columns=S2_BANDS)
-df_test_scaled = pd.DataFrame(df_test_scaled, columns=S2_BANDS)
-for attr in ATTRS:
-    df_train_scaled[attr] = df[attr].iloc[train_idx].values
-    df_valid_scaled[attr] = df[attr].iloc[valid_idx].values
-    df_test_scaled[attr] = df2[attr].values
+scaler, df_train_scaled, df_valid_scaled, df_test_scaled = standardize(
+    df, df2, S2_BANDS)
+scaler2, df_train_scaled2, df_valid_scaled2, df_test_scaled2 = standardize(
+    df, df2, ATTRS)
+df_train_scaled = pd.DataFrame(
+    np.hstack((df_train_scaled, df_train_scaled2)), columns=S2_BANDS+ATTRS)
+df_valid_scaled = pd.DataFrame(
+    np.hstack((df_valid_scaled, df_valid_scaled2)), columns=S2_BANDS+ATTRS)
+df_test_scaled = pd.DataFrame(
+    np.hstack((df_test_scaled, df_test_scaled2)), columns=S2_BANDS+ATTRS)
+
+np.save(os.path.join(BASE_DIR, 'train_x_mean.npy'), scaler.mean_)
+np.save(os.path.join(BASE_DIR, 'train_x_scale.npy'), scaler.scale_)
+np.save(os.path.join(BASE_DIR, 'train_y_mean.npy'), scaler2.mean_)
+np.save(os.path.join(BASE_DIR, 'train_y_scale.npy'), scaler2.scale_)
+
+# df_valid = df[S2_BANDS].iloc[valid_idx]
+# df_train = df[S2_BANDS].iloc[train_idx]
+# df_test = df2[S2_BANDS]
+
+# scaler = preprocessing.StandardScaler().fit(df_train)
+# df_train_scaled = scaler.transform(df_train)
+# df_valid_scaled = scaler.transform(df_valid)
+# df_test_scaled = scaler.transform(df_test)
+
+# df_train_scaled = pd.DataFrame(df_train_scaled, columns=S2_BANDS)
+# df_valid_scaled = pd.DataFrame(df_valid_scaled, columns=S2_BANDS)
+# df_test_scaled = pd.DataFrame(df_test_scaled, columns=S2_BANDS)
+
+# for attr in ATTRS:
+#     df_train_scaled[attr] = df[attr].iloc[train_idx].values
+#     df_valid_scaled[attr] = df[attr].iloc[valid_idx].values
+#     df_test_scaled[attr] = df2[attr].values
 
 # save the mean and scale of the training set
 # np.save('/maps/ys611/ai-refined-rtm/data/train_mean.npy', scaler.mean_)
 # np.save('/maps/ys611/ai-refined-rtm/data/train_scale.npy', scaler.scale_)
-np.save(os.path.join(BASE_DIR, 'train_mean.npy'), scaler.mean_)
-np.save(os.path.join(BASE_DIR, 'train_scale.npy'), scaler.scale_)
+# np.save(os.path.join(BASE_DIR, 'train_mean.npy'), scaler.mean_)
+# np.save(os.path.join(BASE_DIR, 'train_scale.npy'), scaler.scale_)
 
 # save the scaled data
 # df_train_scaled.to_csv(
