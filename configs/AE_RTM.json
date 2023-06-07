@@ -53,14 +53,14 @@
     "data_loader": {
         "type": "SpectrumS2DataLoader",
         "args": {
-            "data_dir": "data/real/BPWW_extract_2018_reshaped_train_scaled.csv",
+            "data_dir": "/maps/ys611/ai-refined-rtm/data/real/BPWW_extract_2018_reshaped_train_scaled.csv",
             "batch_size": 64,
             "shuffle": true,
             "validation_split": 0.0,
             "num_workers": 2
         },
-        "data_dir_valid": "data/real/BPWW_extract_2018_reshaped_valid_scaled.csv",
-        "data_dir_test": "data/real/BPWW_extract_2018_reshaped_test_scaled.csv"
+        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/real/BPWW_extract_2018_reshaped_valid_scaled.csv",
+        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/real/BPWW_extract_2018_reshaped_test_scaled.csv"
     },
     "optimizer": {
         "type": "Adam",
@@ -81,7 +81,7 @@
     },
     "trainer": {
         "epochs": 100,
-        "save_dir": "saved/",
+        "save_dir": "/maps/ys611/ai-refined-rtm/saved/",
         "save_period": 10,
         "verbosity": 2,
         "monitor": "min val_loss",
@@ -90,6 +90,6 @@
         "output_key": "spectrum",
         "stablize_grad": true,
         "tensorboard": false,
-        "wandb": false
+        "wandb": true
     }
 }
