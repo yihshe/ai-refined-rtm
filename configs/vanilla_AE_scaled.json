@@ -24,7 +24,7 @@
         "type": "Adam",
         "args": {
             "lr": 0.001,
-            "weight_decay": 0,
+            "weight_decay": 1e-4,
             "amsgrad": true
         }
     },
@@ -44,6 +44,9 @@
         "verbosity": 2,
         "monitor": "min val_loss",
         "early_stop": 10,
+        "input_key": "spectrum",
+        "output_key": "spectrum",
+        "stablize_grad": false,
         "tensorboard": false,
         "wandb": true
     }

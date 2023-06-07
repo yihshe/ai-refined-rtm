@@ -44,6 +44,9 @@
         "verbosity": 2,
         "monitor": "min val_loss",
         "early_stop": 10,
+        "input_key": "spectrum",
+        "output_key": "rtm_paras",
+        "stablize_grad": false,
         "tensorboard": false,
         "wandb": false
     }

@@ -39,8 +39,11 @@ class Trainer(BaseTrainer):
         self.train_loss_per_band = None
         self.valid_loss_per_band = None
         # define the data key and target key
-        self.data_key = 'spectrum'
-        self.target_key = 'rtm_paras' if config['arch']['type'] == 'NNRegressor'else 'spectrum'
+        self.data_key = config['trainer']['input_key']
+        self.target_key = config['trainer']['output_key']
+        # define a flag to indicate whether to stablize the gradient or not
+        self.stablize_grad = config['trainer']['stablize_grad']
+        self.stablize_count = 0
 
     def _train_epoch(self, epoch):
         """
@@ -51,8 +54,7 @@ class Trainer(BaseTrainer):
         """
         self.model.train()
         self.train_metrics.reset()
-        # for batch_idx, (data, target) in enumerate(self.data_loader):
-        #     data, target = data.to(self.device), target.to(self.device)
+
         for batch_idx, data_dict in enumerate(self.data_loader):
             data = data_dict[self.data_key].to(self.device)
             target = data_dict[self.target_key].to(self.device)
@@ -60,45 +62,9 @@ class Trainer(BaseTrainer):
             output = self.model(data)
             loss = self.criterion(output, target)
             loss.backward()
-            # Clip the gradient norms for all parameters in the model
-            # torch.nn.utils.clip_grad_norm_(
-            #     self.model.parameters(), max_norm=1.0)
-            # for p in self.model.parameters():
-            #     p.grad.data.div_(torch.norm(p.grad.data) + 1e-8)
-            print(batch_idx, loss)
-            # paras = {k: v for k, v in self.model.named_parameters()}
-
-            # if batch_idx > 0 or True in torch.isnan(paras['encoder.6.weight'].grad):
-            #     print('encoder.6.weight.grad', [
-            #           paras['encoder.6.weight'].grad])
-            #     print('encoder.6.bias.grad', [paras['encoder.6.bias'].grad])
-            # embed()
-
-            # Map out the gradient
-            # w_grad = paras[list(paras.keys())[-2]].grad.data
-            # b_grad = paras[list(paras.keys())[-1]].grad.data
-            # if torch.isnan(w_grad).any() or w_grad.eq(0).any() or torch.isnan(b_grad).any() or b_grad.eq(0).any():
-            #     epsilon = 1e-7
-            #     w_rand_values = torch.rand_like(
-            #         w_grad, dtype=torch.float)*epsilon
-            #     b_rand_values = torch.rand_like(
-            #         b_grad, dtype=torch.float)*epsilon
-            #     w_mask = torch.isnan(w_grad) | w_grad.eq(0)
-            #     b_mask = torch.isnan(b_grad) | b_grad.eq(0)
-            #     w_grad[w_mask] = w_rand_values[w_mask]
-            #     b_grad[b_mask] = b_rand_values[b_mask]
-            #     print('map out the gradient')
-            #     embed()
-            para_grads = {k: v.grad.data for k, v in self.model.named_parameters(
-            ) if v.grad is not None and torch.isnan(v.grad).any()}
-            if len(para_grads) > 0:
-                epsilon = 1e-7
-                for k, v in para_grads.items():
-                    rand_values = torch.rand_like(v, dtype=torch.float)*epsilon
-                    mask = torch.isnan(v) | v.eq(0)
-                    v[mask] = rand_values[mask]
-                print('map out the gradient')
-                # embed()
+            # statblize the gradient if RTM is used
+            if self.stablize_grad:
+                self._grad_stablizer(epoch, batch_idx, loss.item())
 
             self.optimizer.step()
 
@@ -107,6 +73,7 @@ class Trainer(BaseTrainer):
 
             # log the loss to wandb
             metrics_per_step = {'train_step/train_loss': loss.item()}
+            # log the loss per band to wandb
             loss_per_band = mse_loss_per_channel(output, target)
             metrics_per_step.update(
                 {f'train_step_channel/train_loss_channel{i}':
@@ -169,6 +136,8 @@ class Trainer(BaseTrainer):
                 {'train_epoch/lr': np.float32(self.lr_scheduler.get_lr()[0])}
             )
         wandb.log(metrics_per_epoch, step=epoch*self.len_epoch)
+        if self.stablize_grad:
+            wandb.summary['grad_stablize_count'] = self.stablize_count
         return log
 
     def _valid_epoch(self, epoch):
@@ -181,11 +150,7 @@ class Trainer(BaseTrainer):
         self.model.eval()
         self.valid_metrics.reset()
         with torch.no_grad():
-            # for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-            #     data, target = data.to(self.device), target.to(self.device)
             for batch_idx, data_dict in enumerate(self.valid_data_loader):
-                # data = data_dict['spectrum'].to(self.device)
-                # target = data_dict['spectrum'].to(self.device)
                 data = data_dict[self.data_key].to(self.device)
                 target = data_dict[self.target_key].to(self.device)
 
@@ -225,3 +190,18 @@ class Trainer(BaseTrainer):
             current = batch_idx
             total = self.len_epoch
         return base.format(current, total, 100.0 * current / total)
+
+    def _grad_stablizer(self, epoch, batch_idx, loss):
+        para_grads = [v.grad.data for v in self.model.parameters(
+        ) if v.grad is not None and torch.isnan(v.grad).any()]
+        if len(para_grads) > 0:
+            epsilon = 1e-7
+            for v in para_grads:
+                rand_values = torch.rand_like(v, dtype=torch.float)*epsilon
+                mask = torch.isnan(v) | v.eq(0)
+                v[mask] = rand_values[mask]
+            self.stablize_count += 1
+            self.logger.info(
+                'epoch: {}, batch: {}, loss: {}, stablize count: {}'.format(
+                    epoch, batch_idx, loss, self.stablize_count)
+            )

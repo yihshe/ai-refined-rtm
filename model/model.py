@@ -71,16 +71,16 @@ class VanillaAE(BaseModel):
         return x
 
 
-class VanillaAE_RTM(BaseModel):
+class AE_RTM(BaseModel):
     """
     Vanilla AutoEncoder (AE) with RTM as the decoder
     input -> encoder (learnable) -> decoder (INFORM) -> output
     """
 
-    def __init__(self, input_dim, hidden_dim, rtm_para_names, standardization):
+    def __init__(self, input_dim, hidden_dim, rtm_paras, standardization):
         super().__init__()
         assert hidden_dim == len(
-            rtm_para_names), "hidden_dim must be equal to the number of RTM parameters"
+            rtm_paras), "hidden_dim must be equal to the number of RTM parameters"
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         # The encoder is learnable neural networks
@@ -97,7 +97,7 @@ class VanillaAE_RTM(BaseModel):
         # The decoder is the INFORM RTM with fixed parameters
         self.decoder = RTM()
         # NOTE ["N", "cab", "cw", "cm", "LAI", "LAIu", "sd", "h", "cd"]
-        self.rtm_para_names = rtm_para_names
+        self.rtm_paras = rtm_paras
         S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
                          'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
                          'B8A_NIR2', 'B09_WV', 'B10', 'B11_SWI1',
@@ -119,9 +119,9 @@ class VanillaAE_RTM(BaseModel):
     #  define decode function to further process the output of decoder
     def decode(self, x):
         para_dict = {}
-        for i, para_name in enumerate(self.rtm_para_names.keys()):
-            min = self.rtm_para_names[para_name]['min']
-            max = self.rtm_para_names[para_name]['max']
+        for i, para_name in enumerate(self.rtm_paras.keys()):
+            min = self.rtm_paras[para_name]['min']
+            max = self.rtm_paras[para_name]['max']
             para_dict[para_name] = x[:, i]*(max-min)+min
 
         output = self.decoder.run(**para_dict)[:, self.bands_index]
