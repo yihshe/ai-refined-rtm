@@ -101,6 +101,7 @@ class Prospect:
 
     def prospect_D(self, N, Cab, Car, Anth, Cbrown, Cw, Cm):
         n = PD_refractive
+        # NOTE if N is a zero tensor, the result of k is inf
         k = (torch.outer(Cab, PD_k_Cab) + torch.outer(Car, PD_k_Car) + torch.outer(Anth, PD_k_Anth) +
              torch.outer(Cbrown, PD_k_Brown) + torch.outer(Cw, PD_k_Cw) + torch.outer(Cm, PD_k_Cm)) / N.unsqueeze(-1)
 

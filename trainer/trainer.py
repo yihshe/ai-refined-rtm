@@ -4,7 +4,8 @@ from torchvision.utils import make_grid
 from base import BaseTrainer
 from utils import inf_loop, MetricTracker
 import wandb
-from model.loss import mse_loss_per_band
+from model.loss import mse_loss_per_channel
+from IPython import embed
 
 
 class Trainer(BaseTrainer):
@@ -37,6 +38,12 @@ class Trainer(BaseTrainer):
         # track the train and validation loss per band on wandb
         self.train_loss_per_band = None
         self.valid_loss_per_band = None
+        # define the data key and target key
+        self.data_key = config['trainer']['input_key']
+        self.target_key = config['trainer']['output_key']
+        # define a flag to indicate whether to stablize the gradient or not
+        self.stablize_grad = config['trainer']['stablize_grad']
+        self.stablize_count = 0
 
     def _train_epoch(self, epoch):
         """
@@ -47,16 +54,18 @@ class Trainer(BaseTrainer):
         """
         self.model.train()
         self.train_metrics.reset()
-        # for batch_idx, (data, target) in enumerate(self.data_loader):
-        #     data, target = data.to(self.device), target.to(self.device)
 
         for batch_idx, data_dict in enumerate(self.data_loader):
-            data = data_dict['spectrum'].to(self.device)
-            target = data_dict['spectrum'].to(self.device)
+            data = data_dict[self.data_key].to(self.device)
+            target = data_dict[self.target_key].to(self.device)
             self.optimizer.zero_grad()
             output = self.model(data)
             loss = self.criterion(output, target)
             loss.backward()
+            # statblize the gradient if RTM is used
+            if self.stablize_grad:
+                self._grad_stablizer(epoch, batch_idx, loss.item())
+
             self.optimizer.step()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
@@ -64,23 +73,25 @@ class Trainer(BaseTrainer):
 
             # log the loss to wandb
             metrics_per_step = {'train_step/train_loss': loss.item()}
-            loss_per_band = mse_loss_per_band(output, target)
-            metrics_per_step.update(
-                {f'train_step_band/train_loss_band{i}':
-                 loss_per_band[i].item()
-                 for i in range(loss_per_band.shape[0])}
-            )
-            if batch_idx == 0:
-                self.train_loss_per_band = loss_per_band.view(1, -1)
-            else:
-                self.train_loss_per_band = torch.cat((
-                    self.train_loss_per_band, loss_per_band.view(1, -1)
-                ), dim=0)
+            # log the loss per band to wandb
+            # loss_per_band = mse_loss_per_channel(output, target)
+            # metrics_per_step.update(
+            #     {f'train_step_channel/train_loss_channel{i}':
+            #         loss_per_band[i].item()
+            #         for i in range(loss_per_band.shape[0])}
+            # )
+            # if batch_idx == 0:
+            #     self.train_loss_per_band = loss_per_band.view(1, -1)
+            # else:
+            #     self.train_loss_per_band = torch.cat((
+            #         self.train_loss_per_band, loss_per_band.view(1, -1)
+            #     ), dim=0)
             wandb.log(metrics_per_step,
                       step=(epoch - 1) * self.len_epoch + batch_idx)
 
             for met in self.metric_ftns:
-                self.train_metrics.update(met.__name__, met(output, target))
+                self.train_metrics.update(
+                    met.__name__, met(output, target))
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
@@ -93,29 +104,30 @@ class Trainer(BaseTrainer):
 
             if batch_idx == self.len_epoch:
                 break
+
         log = self.train_metrics.result()
 
         # log the train loss to wandb
         metrics_per_epoch = {'train_epoch/train_loss': log['loss']}
-        self.train_loss_per_band = torch.mean(
-            self.train_loss_per_band, dim=0)
-        metrics_per_epoch.update(
-            {f'train_epoch_band/train_loss_band{i}':
-             self.train_loss_per_band[i].item()
-             for i in range(self.train_loss_per_band.shape[0])}
-        )
+        # self.train_loss_per_band = torch.mean(
+        #     self.train_loss_per_band, dim=0)
+        # metrics_per_epoch.update(
+        #     {f'train_epoch_channel/train_loss_channel{i}':
+        #      self.train_loss_per_band[i].item()
+        #      for i in range(self.train_loss_per_band.shape[0])}
+        # )
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
             log.update(**{'val_'+k: v for k, v in val_log.items()})
             # log the validation loss to wandb
             metrics_per_epoch.update({'train_epoch/val_loss': val_log['loss']})
-            self.valid_loss_per_band = torch.mean(
-                self.valid_loss_per_band, dim=0)
-            metrics_per_epoch.update(
-                {f'train_epoch_band/val_loss_band{i}':
-                 self.valid_loss_per_band[i].item()
-                 for i in range(self.valid_loss_per_band.shape[0])}
-            )
+            # self.valid_loss_per_band = torch.mean(
+            #     self.valid_loss_per_band, dim=0)
+            # metrics_per_epoch.update(
+            #     {f'train_epoch_channel/val_loss_channel{i}':
+            #      self.valid_loss_per_band[i].item()
+            #      for i in range(self.valid_loss_per_band.shape[0])}
+            # )
 
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
@@ -124,6 +136,8 @@ class Trainer(BaseTrainer):
                 {'train_epoch/lr': np.float32(self.lr_scheduler.get_lr()[0])}
             )
         wandb.log(metrics_per_epoch, step=epoch*self.len_epoch)
+        if self.stablize_grad:
+            wandb.summary['grad_stablize_count'] = self.stablize_count
         return log
 
     def _valid_epoch(self, epoch):
@@ -136,23 +150,21 @@ class Trainer(BaseTrainer):
         self.model.eval()
         self.valid_metrics.reset()
         with torch.no_grad():
-            # for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-            #     data, target = data.to(self.device), target.to(self.device)
             for batch_idx, data_dict in enumerate(self.valid_data_loader):
-                data = data_dict['spectrum'].to(self.device)
-                target = data_dict['spectrum'].to(self.device)
+                data = data_dict[self.data_key].to(self.device)
+                target = data_dict[self.target_key].to(self.device)
 
                 output = self.model(data)
                 loss = self.criterion(output, target)
 
-                # track the validation loss per band and log to wandb
-                loss_per_band = mse_loss_per_band(output, target)
-                if batch_idx == 0:
-                    self.valid_loss_per_band = loss_per_band.view(1, -1)
-                else:
-                    self.valid_loss_per_band = torch.cat((
-                        self.valid_loss_per_band, loss_per_band.view(1, -1)
-                    ), dim=0)
+                # # track the validation loss per band and log to wandb
+                # loss_per_band = mse_loss_per_channel(output, target)
+                # if batch_idx == 0:
+                #     self.valid_loss_per_band = loss_per_band.view(1, -1)
+                # else:
+                #     self.valid_loss_per_band = torch.cat((
+                #         self.valid_loss_per_band, loss_per_band.view(1, -1)
+                #     ), dim=0)
 
                 self.writer.set_step(
                     (epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
@@ -178,3 +190,18 @@ class Trainer(BaseTrainer):
             current = batch_idx
             total = self.len_epoch
         return base.format(current, total, 100.0 * current / total)
+
+    def _grad_stablizer(self, epoch, batch_idx, loss):
+        para_grads = [v.grad.data for v in self.model.parameters(
+        ) if v.grad is not None and torch.isnan(v.grad).any()]
+        if len(para_grads) > 0:
+            epsilon = 1e-7
+            for v in para_grads:
+                rand_values = torch.rand_like(v, dtype=torch.float)*epsilon
+                mask = torch.isnan(v) | v.eq(0)
+                v[mask] = rand_values[mask]
+            self.stablize_count += 1
+            self.logger.info(
+                'epoch: {}, batch: {}, loss: {}, stablize count: {}'.format(
+                    epoch, batch_idx, loss, self.stablize_count)
+            )

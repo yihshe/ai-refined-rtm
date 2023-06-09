@@ -28,6 +28,7 @@
 import csv
 import sys
 import os
+import torch
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -41,14 +42,15 @@ warnings.filterwarnings('ignore')  # ignore warnings, like ZeroDivision
 # class RTM is the main class to run the Radiative Transfer Model
 
 
-class RTM:
+class RTM():
     def __init__(self):
         super(RTM, self).__init__()
         # store all model choices available for the user
         self.model_choice_init()
+        # initialize the model architecture
+        self.model_init()
         # initialize the model parameters
         self.para_init()
-        # self.mod_exec()
 
     def model_choice_init(self):
         list_dir = os.listdir(APP_DIR + "/Resources/Spec2Sensor/srf")
@@ -68,14 +70,44 @@ class RTM:
         # store canopy model list
         self.canopy_arch_list = ['sail', 'inform', 'None']
 
+    def model_init(self,
+                   sensor="Sentinel2_Full",
+                   lop="prospectD",
+                   canopy_arch="inform",
+                   bg_type="default",
+                   bg_spec=None,
+                   ):
+        # Reset the choice of sub-models
+        assert sensor in self.sensor_list
+        assert lop in self.lop_list
+        assert canopy_arch in self.canopy_arch_list
+        self.sensor = sensor
+        self.lop = lop
+        self.canopy_arch = canopy_arch
+        self.bg_type = bg_type
+        self.bg_spec = bg_spec
+        self.mod_I = self.rtm_init(sensor=self.sensor, lop=self.lop,
+                                   canopy_arch=self.canopy_arch)
+
+    def rtm_init(self, sensor="Sentinel2_Full", lop="prospectD",
+                 canopy_arch="inform"):
+        # create new Instance of the RTM
+        # NOTE manually set the int_boost to 10000.0. The default value is 1.0
+        return mod.InitModel(lop=lop, canopy_arch=canopy_arch, nodat=-999,
+                             int_boost=10000.0, s2s=sensor)
+
     def para_init(self):
+        # initialize the device
+        self.device = torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu')
+
         # Set all parameters to default values according to the app UI
-        # specify the sensor type
-        self.sensor = "Sentinel2_Full"
-        # specify the leaf model type
-        self.lop = "prospectD"
-        # specify the canopy model type
-        self.canopy_arch = "inform"
+        # # specify the sensor type
+        # self.sensor = "Sentinel2_Full"
+        # # specify the leaf model type
+        # self.lop = "prospectD"
+        # # specify the canopy model type
+        # self.canopy_arch = "inform"
 
         # set the default values for the parameters of leaf and canopy models
         self.para_names = ["N", "cab", "cw", "cm", "LAI", "typeLIDF", "LIDF",
@@ -87,10 +119,10 @@ class RTM:
         )
 
         # Background Parameters
-        # Default soil spectrum without loading background spectrum
-        self.bg_type = "default"
-        self.bg_spec = None
-        # Brightness Factor (psoil) when using default soil spectrum
+        # # Default soil spectrum without loading background spectrum
+        # self.bg_type = "default"
+        # self.bg_spec = None
+        # Brightness Factor (psoil) -only when using default soil spectrum
         self.para_dict["psoil"] = 0.8
 
         # Leaf Model Parameters
@@ -119,9 +151,9 @@ class RTM:
         # typeLIDF: Leaf Angle Distribution (LIDF) type: 1 = Beta, 2 = Ellipsoidal
         # if typeLIDF = 2, LIDF is set to between 0 and 90 as Leaf Angle to calculate the Ellipsoidal distribution
         # if typeLIDF = 1, LIDF is set between 0 and 5 as index of one of the six Beta distributions
-        self.para_dict["typeLIDF"] = 2
+        self.para_dict["typeLIDF"] = 1  # 2
         # LIDF: Leaf Angle (LIDF), only used when LIDF is Ellipsoidal
-        self.para_dict["LIDF"] = 30
+        self.para_dict["LIDF"] = 5  # 30
         # hspot: Hot Spot Size Parameter (Hspot)
         self.para_dict["hspot"] = 0.01
         # tto: Observation zenith angle (Tto)
@@ -141,90 +173,50 @@ class RTM:
         # cd: Crown Diameter (CD)
         self.para_dict["cd"] = 4.5
 
+        # Convert all parameters to tensors
+        self.para_dict = {k: torch.tensor([v], dtype=torch.float32).to(
+            self.device) for k, v in self.para_dict.items()}
+
         # TODO set data_mean to None for future evaluations
         self.data_mean = None
 
-    def select_model(self,
-                     sensor="Sentinel2_Full",
-                     lop="prospectD",
-                     canopy_arch="inform",
-                     bg_type="default",
-                     bg_spec=None,):
-        # Reset the choice of sub-models
-        assert sensor in self.sensor_list
-        assert lop in self.lop_list
-        assert canopy_arch in self.canopy_arch_list
-        self.sensor = sensor
-        self.lop = lop
-        self.canopy_arch = canopy_arch
-        self.bg_type = bg_type
-        self.bg_spec = bg_spec
+        # Flag to indicate whether the non-learnable parameters have been reset
+        self.reset_non_learnable = True
 
-    def para_reset(self, **para_dict):
-        # TODO decide the learnable parameters to reset
-        # TODO should we bound the range of parameters in model training?
-        # or should the model just learn a scale factor as in Pheno-VAE?
-        self.para_dict.update(para_dict)
-        # print("Parameters updated!")
+    # update the parameters of the model
+    def para_reset(self, **paras):
+        self.para_dict.update(paras)
+
+        if self.reset_non_learnable:
+            batch_size = len(list(paras.values())[0])
+            # Reset the non-learnable parameters
+            for k, v in self.para_dict.items():
+                if k not in paras.keys():
+                    # extend the non-learnable parameters to batch size
+                    self.para_dict[k] = torch.full(
+                        (batch_size,), v[0], dtype=torch.float32).to(self.device)
+            self.reset_non_learnable = False
 
     # execute the model to run the radiative transfer model
-    def mod_exec(self, mode="single"):
+    def mod_exec(self):
         """
         This function is called whenever PROSAIL is to be triggered; 
         it is the function to sort all inputs and call PROSAIL with the 
         selected settings
         """
-        assert mode in ["single", "batch"]
-        # create new Instance of the RTM
-        # TODO reset int_boost to 10000.0 for future evaluations
-        mod_I = mod.InitModel(
-            lop=self.lop, canopy_arch=self.canopy_arch, nodat=-999,
-            int_boost=1.0, s2s=self.sensor
-        )
-        if mode == "single":
-            # initialize a single model run
-            self.myResult = mod_I.initialize_single(soil=self.bg_spec,
-                                                    tts=self.para_dict["tts"],
-                                                    tto=self.para_dict["tto"],
-                                                    psi=self.para_dict["psi"],
-                                                    N=self.para_dict["N"],
-                                                    cab=self.para_dict["cab"],
-                                                    cw=self.para_dict["cw"],
-                                                    cm=self.para_dict["cm"],
-                                                    LAI=self.para_dict["LAI"],
-                                                    LIDF=self.para_dict["LIDF"],
-                                                    typeLIDF=self.para_dict["typeLIDF"],
-                                                    hspot=self.para_dict["hspot"],
-                                                    psoil=self.para_dict["psoil"],
-                                                    cp=self.para_dict["cp"],
-                                                    cbc=self.para_dict["cbc"],
-                                                    car=self.para_dict["car"],
-                                                    cbrown=self.para_dict["cbrown"],
-                                                    anth=self.para_dict["anth"],
-                                                    LAIu=self.para_dict["LAIu"],
-                                                    cd=self.para_dict["cd"],
-                                                    sd=self.para_dict["sd"],
-                                                    h=self.para_dict["h"])[0, :]
-        elif mode == "batch":
-            self.myResult = mod_I.initialize_multiple_simple(soil=self.bg_spec,
-                                                             tts=self.para_dict["tts"],
-                                                             tto=self.para_dict["tto"],
-                                                             psi=self.para_dict["psi"],
-                                                             N=self.para_dict["N"],
-                                                             cab=self.para_dict["cab"],
-                                                             cw=self.para_dict["cw"],
-                                                             cm=self.para_dict["cm"],
-                                                             LAI=self.para_dict["LAI"],
-                                                             LIDF=self.para_dict["LIDF"],
-                                                             typeLIDF=self.para_dict["typeLIDF"],
-                                                             hspot=self.para_dict["hspot"],
-                                                             psoil=self.para_dict["psoil"],
-                                                             cp=self.para_dict["cp"],
-                                                             cbc=self.para_dict["cbc"],
-                                                             car=self.para_dict["car"],
-                                                             cbrown=self.para_dict["cbrown"],
-                                                             anth=self.para_dict["anth"],
-                                                             LAIu=self.para_dict["LAIu"],
-                                                             cd=self.para_dict["cd"],
-                                                             sd=self.para_dict["sd"],
-                                                             h=self.para_dict["h"])
+        # # create new Instance of the RTM
+        # # TODO reset int_boost to 10000.0 for future evaluations
+        # mod_I = mod.InitModel(
+        #     lop=self.lop, canopy_arch=self.canopy_arch, nodat=-999,
+        #     int_boost=1.0, s2s=self.sensor
+        # )
+
+        # the pytorch model will only run in batch mode
+        self.myResult = self.mod_I.initialize_multiple_simple(soil=self.bg_spec,
+                                                              **self.para_dict)
+
+    # run the model and return the results
+    def run(self, **paras):
+        self.para_reset(**paras)
+        self.mod_exec()
+        return self.myResult

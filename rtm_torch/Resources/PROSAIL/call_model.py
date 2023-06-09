@@ -54,6 +54,8 @@ class CallModel:
         # cab is always part of self.par, so it is used to obtain ninputs
         self.ninputs = self.par['cab'].shape[0]
         self.soil = soil
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu")
 
     def call_prospect4(self):
         prospect_instance = prospect_v.Prospect()
@@ -132,10 +134,10 @@ class CallModel:
         # Step 2: call Pro4sail with understory as soil to calculate infinite crown reflectance
         # vectorized: intialize extreme LAI ninputs times
         inform_temp_LAI = torch.full(
-            (self.ninputs,), 15, dtype=torch.float32).T
+            (self.ninputs,), 15, dtype=torch.float32).T.to(self.device)
         # vectorized: initialize hspot = 0 ninputs times
         inform_temp_hspot = torch.full(
-            (self.ninputs,), 0, dtype=torch.float32).T
+            (self.ninputs,), 0, dtype=torch.float32).T.to(self.device)
 
         self.sail_inf_refl = sail_instance.pro4sail(self.prospect[:, :, 1], self.prospect[:, :, 2],
                                                     self.par["LIDF"], self.par["typeLIDF"],
@@ -197,12 +199,15 @@ class InitModel:
                 raise Exception(
                     "Could not convert spectra to sensor resolution!")
 
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu")
+
     def initialize_multiple_simple(self, soil=None, **paras):
         # simple tests for vectorized versions
         self.soil = soil
         nparas = len(paras['LAI'])
         para_grid = torch.empty(
-            (nparas, len(paras.keys())), dtype=torch.float32)
+            (nparas, len(paras.keys())), dtype=torch.float32).to(self.device)
         for run in range(nparas):
             for ikey, key in enumerate(self.para_names):
                 para_grid[run, ikey] = paras[key][run]
@@ -221,7 +226,7 @@ class InitModel:
 
         # shape 1 for single run
         # TODO para_grid also needs to be put on device
-        para_grid = torch.empty((1, len(paras.keys())))
+        para_grid = torch.empty((1, len(paras.keys()))).to(self.device)
         for ikey, key in enumerate(self.para_names):
             para_grid[0, ikey] = paras[key]
         return self.run_model(paras=dict(zip(self.para_names, para_grid.T)))

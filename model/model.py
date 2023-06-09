@@ -1,6 +1,9 @@
+import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from base import BaseModel
+from rtm_torch.rtm import RTM
 
 
 class MnistModel(BaseModel):
@@ -21,21 +24,13 @@ class MnistModel(BaseModel):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 
-# build a vanilla AutoEncoder based on BaseModel with the following architecture in PyTorch:
-# input -> encoder -> decoder -> output
-# input and output are the same 1-D vector of size input_dim less than 100
-# encoder is 3 fully connected layers with ReLU activation with suitable hidden dimensions as you see fit
-# the output of encoder is the latent vector of size hidden_dim
-# decoder is 3 fully connected layers with ReLU activation
-# the output of decoder is the reconstructed vector of size input_dim
-# the loss function is the mean squared error between input and output
-# the optimizer is Adam with learning rate 1e-3
-# the number of epochs is 100
-# the batch size is 128
-# build a class VanillaAE(BaseModel) in model.py
-
 
 class VanillaAE(BaseModel):
+    """
+    Vanilla AutoEncoder (AE) 
+    input -> encoder -> decoder -> output
+    """
+
     def __init__(self, input_dim, hidden_dim):
         super().__init__()
         self.input_dim = input_dim
@@ -48,7 +43,7 @@ class VanillaAE(BaseModel):
             nn.Linear(32, hidden_dim),
             nn.ReLU(),
         )
-        # TODO replace the encoder with the fixed RTM from rtm.py
+        # TODO modify hidden_dim to 10, add ReLU to decoder and run it again
         self.decoder = nn.Sequential(
             nn.Linear(hidden_dim, 32),
             nn.ReLU(),
@@ -73,4 +68,97 @@ class VanillaAE(BaseModel):
     def forward(self, x):
         x = self.encode(x)
         x = self.decode(x)
+        return x
+
+
+class AE_RTM(BaseModel):
+    """
+    Vanilla AutoEncoder (AE) with RTM as the decoder
+    input -> encoder (learnable) -> decoder (INFORM) -> output
+    """
+
+    def __init__(self, input_dim, hidden_dim, rtm_paras, standardization):
+        super().__init__()
+        assert hidden_dim == len(
+            rtm_paras), "hidden_dim must be equal to the number of RTM parameters"
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+        # The encoder is learnable neural networks
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, hidden_dim),
+            nn.Sigmoid(),
+        )
+        # The decoder is the INFORM RTM with fixed parameters
+        self.decoder = RTM()
+        # NOTE ["N", "cab", "cw", "cm", "LAI", "LAIu", "sd", "h", "cd"]
+        self.rtm_paras = rtm_paras
+        S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
+                         'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
+                         'B8A_NIR2', 'B09_WV', 'B10', 'B11_SWI1',
+                         'B12_SWI2']
+        self.bands_index = [i for i in range(
+            len(S2_FULL_BANDS)) if S2_FULL_BANDS[i] not in ['B01', 'B10']]
+        # Mean and scale for standardization
+        self.device = self.device = torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu')
+        self.x_mean = torch.tensor(
+            np.load(standardization['x_mean'])).float().unsqueeze(0).to(self.device)
+        self.x_scale = torch.tensor(
+            np.load(standardization['x_scale'])).float().unsqueeze(0).to(self.device)
+
+    #  define encode function to further process the output of encoder
+    def encode(self, x):
+        return self.encoder(x)
+
+    #  define decode function to further process the output of decoder
+    def decode(self, x):
+        para_dict = {}
+        for i, para_name in enumerate(self.rtm_paras.keys()):
+            min = self.rtm_paras[para_name]['min']
+            max = self.rtm_paras[para_name]['max']
+            para_dict[para_name] = x[:, i]*(max-min)+min
+
+        output = self.decoder.run(**para_dict)[:, self.bands_index]
+        return (output-self.x_mean)/self.x_scale
+
+    def forward(self, x):
+        x = self.encode(x)
+        x = self.decode(x)
+        return x
+
+
+class NNRegressor(BaseModel):
+    """
+    Approximate Neural Network (ANN) with PyTorch
+    input -> encoder -> decoder -> output
+    """
+
+    def __init__(self, input_dim, hidden_dim):
+        super().__init__()
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, hidden_dim),
+            # nn.Softplus(),
+            # nn.ReLU(),
+        )
+
+    #  define encode function to further process the output of encoder
+    def encode(self, x):
+        return self.encoder(x)
+
+    def forward(self, x):
+        x = self.encode(x)
         return x
