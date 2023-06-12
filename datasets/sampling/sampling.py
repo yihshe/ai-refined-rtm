@@ -5,7 +5,7 @@ from rtm_torch.rtm import RTM
 import pandas as pd
 torch.manual_seed(0)
 
-SAVE_PATH = "/maps/ys611/ai-refined-rtm/data/synthetic/20230529"
+SAVE_PATH = "/maps/ys611/ai-refined-rtm/data/synthetic/20230611"
 # B01 and B10 will not be used in the training
 S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
                  'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
@@ -30,7 +30,7 @@ def para_sampling(num_samples=100):
     # cab: Chlorophyll A+B (cab)
     para_dict["cab"] = uniform_sampling(0.0, 100.0, num_samples)
     # cw: Water Content (Cw)
-    para_dict["cw"] = uniform_sampling(0.002, 0.08, num_samples)
+    para_dict["cw"] = uniform_sampling(0.0002, 0.08, num_samples)
     # cm: Dry Matter (cm)
     para_dict["cm"] = uniform_sampling(0.0, 0.05, num_samples)
     # # car: Carotenoids (Ccx)
@@ -52,7 +52,7 @@ def para_sampling(num_samples=100):
     # # if typeLIDF = 1, LIDF is set between 0 and 5 as index of one of the six Beta distributions
     # para_dict["typeLIDF"] = np.full(num_samples, 2)
     # LIDF: Leaf Angle (LIDF), only used when LIDF is Ellipsoidal
-    para_dict["LIDF"] = uniform_sampling(0.0, 90.0, num_samples)
+    # para_dict["LIDF"] = uniform_sampling(0.0, 90.0, num_samples)
     # # hspot: Hot Spot Size Parameter (Hspot)
     # para_dict["hspot"] = np.random.uniform(0.0, 1.0, num_samples)
     # # tto: Observation zenith angle (Tto)

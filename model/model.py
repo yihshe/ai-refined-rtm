@@ -40,17 +40,20 @@ class VanillaAE(BaseModel):
             nn.ReLU(),
             nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(32, hidden_dim),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, hidden_dim),
             nn.ReLU(),
         )
         # TODO modify hidden_dim to 10, add ReLU to decoder and run it again
         self.decoder = nn.Sequential(
-            nn.Linear(hidden_dim, 32),
+            nn.Linear(hidden_dim, 16),
+            nn.ReLU(),
+            nn.Linear(16, 32),
             nn.ReLU(),
             nn.Linear(32, 64),
             nn.ReLU(),
             nn.Linear(64, input_dim),
-            # nn.ReLU(),
         )
 
     #  define encode function to further process the output of encoder
@@ -151,14 +154,17 @@ class NNRegressor(BaseModel):
             nn.Linear(32, 16),
             nn.ReLU(),
             nn.Linear(16, hidden_dim),
-            # nn.Softplus(),
-            # nn.ReLU(),
+            nn.Sigmoid(),
         )
 
     #  define encode function to further process the output of encoder
     def encode(self, x):
+        # output of the encoder is just an NNRegressor
+        # NOTE learning of latents should be conducted in normalized space
         return self.encoder(x)
 
     def forward(self, x):
+        # TODO forward mode can be either "train" or "infer" in the future
+        # so far it is only "train" thus the output is a scale factor
         x = self.encode(x)
         return x
