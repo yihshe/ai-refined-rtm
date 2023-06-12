@@ -136,6 +136,30 @@ class AE_RTM(BaseModel):
         return x
 
 
+class AE_RTM_corr(AE_RTM):
+    """
+    Vanilla AutoEncoder (AE) with RTM as the decoder and additional layers for correction
+    input -> encoder (learnable) -> decoder (INFORM) -> correction -> output
+    """
+
+    def __init__(self, input_dim, hidden_dim, rtm_paras, standardization):
+        super().__init__(input_dim, hidden_dim, rtm_paras, standardization)
+        self.correction = nn.Sequential(
+            nn.Linear(len(self.bands_index), 4*len(self.bands_index)),
+            nn.ReLU(),
+            nn.Linear(4*len(self.bands_index), len(self.bands_index)),
+        )
+
+    def correct(self, x):
+        return self.correction(x)
+
+    def forward(self, x):
+        x = self.encode(x)
+        x = self.decode(x)
+        x = self.correct(x)
+        return x
+
+
 class NNRegressor(BaseModel):
     """
     Approximate Neural Network (ANN) with PyTorch
