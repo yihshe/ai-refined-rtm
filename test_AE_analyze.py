@@ -133,7 +133,7 @@ def main(config):
         analyzer['latent']
     )).cpu().numpy()
     df = pd.DataFrame(columns=columns, data=data)
-    df['sample_id'] = analyzer['sample_id'].cpu().numpy()
+    df['sample_id'] = analyzer['sample_id']
     df['class'] = analyzer['class']
     df['date'] = analyzer['date']
     df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer.csv',

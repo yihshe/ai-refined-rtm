@@ -58,66 +58,93 @@ def main(config):
 
     analyzer = {}
 
-    with torch.no_grad():
-        # for i, (data, target) in enumerate(tqdm(data_loader)):
-        #     data, target = data.to(device), target.to(device)
-        for batch_idx, data_dict in enumerate(data_loader):
-            # TODO change the input and target keys
-            data = data_dict[data_key].to(device)
-            target = data_dict[target_key].to(device)
-            output = model(data)
+    if config['data_loader']['type'] == 'SyntheticS2DataLoader':
+        mode = "test"
+    elif config['data_loader']['type'] == 'SpectrumS2DataLoader':
+        mode = "infer"
 
-            #
-            # save sample images, or do something with output here
-            #
+    if mode == "test":
+        with torch.no_grad():
+            for batch_idx, data_dict in enumerate(data_loader):
+                # TODO change the input and target keys
+                data = data_dict[data_key].to(device)
+                target = data_dict[target_key].to(device)
+                output = model(data)
 
-            # concatenate the loss per band to the loss_analyzer
-            # calculate the squared loss of each element in the batch
-            # latent = model.encode(data)
-            l2_per_band = torch.square(output-target)
-            data_concat(analyzer, 'output', output)
-            data_concat(analyzer, 'target', target)
-            data_concat(analyzer, 'l2', l2_per_band)
-            # data_concat(analyzer, 'latent', latent)
-            # data_concat(analyzer, 'sample_id', data_dict['sample_id'])
-            # data_concat(analyzer, 'class', data_dict['class'])
-            # data_concat(analyzer, 'date', data_dict['date'])
+                #
+                # save sample images, or do something with output here
+                #
 
-            # computing loss, metrics on test set
-            loss = loss_fn(output, target)
-            batch_size = data.shape[0]
-            total_loss += loss.item() * batch_size
-            for i, metric in enumerate(metric_fns):
-                total_metrics[i] += metric(output, target) * batch_size
+                # concatenate the loss per band to the loss_analyzer
+                l2_per_band = torch.square(output-target)
+                data_concat(analyzer, 'output', output)
+                data_concat(analyzer, 'target', target)
+                data_concat(analyzer, 'l2', l2_per_band)
 
-    n_samples = len(data_loader.sampler)
-    log = {'loss': total_loss / n_samples}
-    log.update({
-        met.__name__: total_metrics[i].item() / n_samples
-        for i, met in enumerate(metric_fns)
-    })
-    logger.info(log)
+                # computing loss, metrics on test set
+                loss = loss_fn(output, target)
+                batch_size = data.shape[0]
+                total_loss += loss.item() * batch_size
+                for i, metric in enumerate(metric_fns):
+                    total_metrics[i] += metric(output, target) * batch_size
+
+        n_samples = len(data_loader.sampler)
+        log = {'loss': total_loss / n_samples}
+        log.update({
+            met.__name__: total_metrics[i].item() / n_samples
+            for i, met in enumerate(metric_fns)
+        })
+        logger.info(log)
+
+        # save the analyzer to csv using pandas
+        columns = []
+        for k in ['output', 'target', 'l2']:
+            columns += [k+'_'+b for b in ATTRS]
+
+        # TODO hstack the columns we want to save
+        data = torch.hstack((
+            analyzer['output'],
+            analyzer['target'],
+            analyzer['l2'],
+            # analyzer['latent']
+        )).cpu().numpy()
+        df = pd.DataFrame(columns=columns, data=data)
+        df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer_syn.csv',
+                  index=False)
+        logger.info('Analyzer saved to {}'.format(
+            str(config.resume).split('.pth')[0]+'_testset_analyzer_syn.csv'
+        ))
+
+    elif mode == "infer":
+        with torch.no_grad():
+            for batch_idx, data_dict in enumerate(data_loader):
+                # TODO change the input and target keys
+                data = data_dict[data_key].to(device)
+                # target = data_dict[target_key].to(device)
+                output = model(data)
+
+                #
+                # save sample images, or do something with output here
+                #
+
+                # concatenate the loss per band to the loss_analyzer
+                data_concat(analyzer, 'output', output)
+                data_concat(analyzer, 'sample_id', data_dict['sample_id'])
+                data_concat(analyzer, 'class', data_dict['class'])
+                data_concat(analyzer, 'date', data_dict['date'])
 
     # save the analyzer to csv using pandas
-    columns = []
-    for k in ['output', 'target', 'l2']:
-        columns += [k+'_'+b for b in ATTRS]
-
-    # TODO hstack the columns we want to save
-    data = torch.hstack((
-        analyzer['output'],
-        analyzer['target'],
-        analyzer['l2'],
-        # analyzer['latent']
-    )).cpu().numpy()
+    columns = ['output'+'_'+b for b in ATTRS]
+    data = analyzer['output'].cpu().numpy()
     df = pd.DataFrame(columns=columns, data=data)
-    # df['sample_id'] = analyzer['sample_id'].cpu().numpy()
-    # df['class'] = analyzer['class']
-    # df['date'] = analyzer['date']
-    df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer_syn.csv',
+    # add the sample_id, class, and date from the real testset
+    df['sample_id'] = analyzer['sample_id']
+    df['class'] = analyzer['class']
+    df['date'] = analyzer['date']
+    df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer_real.csv',
               index=False)
     logger.info('Analyzer saved to {}'.format(
-        str(config.resume).split('.pth')[0]+'_testset_analyzer_syn.csv'
+        str(config.resume).split('.pth')[0]+'_testset_analyzer_real.csv'
     ))
 
 

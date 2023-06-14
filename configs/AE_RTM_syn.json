@@ -1,0 +1,95 @@
+{
+    "name": "AE_RTM_syn",
+    "n_gpu": 1,
+    "arch": {
+        "type": "AE_RTM",
+        "args": {
+            "input_dim": 11,
+            "hidden_dim": 9,
+            "rtm_paras": {
+                "N": {
+                    "min": 1.0,
+                    "max": 4.0
+                },
+                "cab": {
+                    "min": 0.0,
+                    "max": 100.0
+                },
+                "cw": {
+                    "min": 0.0002,
+                    "max": 0.08
+                },
+                "cm": {
+                    "min": 0.0,
+                    "max": 0.05
+                },
+                "LAI": {
+                    "min": 0.01,
+                    "max": 15.0
+                },
+                "LAIu": {
+                    "min": 0.01,
+                    "max": 3.0
+                },
+                "sd": {
+                    "min": 0.0,
+                    "max": 3000.0
+                },
+                "h": {
+                    "min": 1.0,
+                    "max": 50.0
+                },
+                "cd": {
+                    "min": 1.0,
+                    "max": 15.0
+                }
+            },
+            "standardization": {
+                "x_mean": "/maps/ys611/ai-refined-rtm/data/synthetic/20230611/train_x_mean.npy",
+                "x_scale": "/maps/ys611/ai-refined-rtm/data/synthetic/20230611/train_x_scale.npy"
+            }
+        }
+    },
+    "data_loader": {
+        "type": "SyntheticS2DataLoader",
+        "args": {
+            "data_dir": "/maps/ys611/ai-refined-rtm/data/synthetic/20230611/synthetic_train_scaled.csv",
+            "batch_size": 64,
+            "shuffle": true,
+            "validation_split": 0.0,
+            "num_workers": 2
+        },
+        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/synthetic/20230611/synthetic_valid_scaled.csv",
+        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/synthetic/20230611/synthetic_test_scaled.csv"
+    },
+    "optimizer": {
+        "type": "Adam",
+        "args": {
+            "lr": 0.001,
+            "weight_decay": 1e-4,
+            "amsgrad": true
+        }
+    },
+    "loss": "mse_loss",
+    "metrics": [],
+    "lr_scheduler": {
+        "type": "StepLR",
+        "args": {
+            "step_size": 50,
+            "gamma": 0.1
+        }
+    },
+    "trainer": {
+        "epochs": 100,
+        "save_dir": "/maps/ys611/ai-refined-rtm/saved/",
+        "save_period": 10,
+        "verbosity": 2,
+        "monitor": "min val_loss",
+        "early_stop": 10,
+        "input_key": "spectrum",
+        "output_key": "spectrum",
+        "stablize_grad": true,
+        "tensorboard": false,
+        "wandb": true
+    }
+}
