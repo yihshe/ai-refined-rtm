@@ -22,11 +22,15 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 datasets/preprocessing/standardize.py
 
 # Train NN Regressor
-python3 train.py --config configs/NN_regressor.json 
+# python3 train.py --config configs/NN_regressor.json 
 
 # Train a simple vanilla autoencoder with RTM
 # python3 train.py --config configs/AE_RTM.json 
 
 # # Train a simple vanilla autoencoder without RTM
 # python3 train.py --config configs/vanilla_AE_scaled.json
+
+# Train an autoencoder with RTM and with bias correction
+python3 train.py --config configs/AE_RTM_corr.json 
+
 
