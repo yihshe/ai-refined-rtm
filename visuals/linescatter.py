@@ -10,8 +10,9 @@ import os
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM/0612_175828_/'
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/VanillaAE_scaled/0612_220221_'
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532'
-BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507'
-CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer_syn.csv')
+# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507'
+BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0615_171950'
+CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer.csv')
 SAVE_PATH = os.path.join(BASE_PATH, 'linescatter')
 if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)

@@ -17,10 +17,11 @@ import os
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM/0612_175828_/'
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/VanillaAE_scaled/0612_220221_/'
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507/'
-BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532'
+# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532'
+BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0615_171950'
 
 # CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer.csv')
-CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer_real.csv')
+CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer.csv')
 SAVE_PATH = os.path.join(BASE_PATH, 'histograms')
 
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
@@ -78,7 +79,7 @@ plt.show()
 # create one figure and plot each attribute as a subplot
 fig, axs = plt.subplots(3, 3, figsize=(20, 15))
 for i, attr in enumerate(ATTRS):
-    sns.histplot(df[f'output_{attr}'].values,
+    sns.histplot(df[f'latent_{attr}'].values,
                  bins=NUM_BINS, ax=axs[i//3, i % 3])
     # axs[i//3, i % 3].set_title(f'{attr}')
     axs[i//3, i % 3].set_xlabel(attr)
@@ -156,8 +157,8 @@ CSV_PATH1 = os.path.join(
 # CSV_PATH2 = os.path.join(
 #     BASE_PATH, 'AE_RTM_syn/0614_112532/model_best_testset_analyzer_real.csv')
 CSV_PATH2 = os.path.join(
-    BASE_PATH, 'NNRegressor/0612_181507/model_best_testset_analyzer_real.csv')
-SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM/0612_175828_/histograms')
+    BASE_PATH, 'AE_RTM_corr/0615_171950/model_best_testset_analyzer.csv')
+SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0615_171950/histograms')
 
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
@@ -173,7 +174,7 @@ df1 = pd.read_csv(CSV_PATH1)
 df2 = pd.read_csv(CSV_PATH2)
 
 # %%
-# create one figure and plot both band predictions of different models as a subplot
+# create one figure and plot both variable predictions of different models as a subplot
 fig, axs = plt.subplots(3, 3, figsize=(20, 15))
 for i, attr in enumerate(ATTRS):
     sns.histplot(
@@ -185,13 +186,13 @@ for i, attr in enumerate(ATTRS):
         alpha=0.5,
     )
     sns.histplot(
-        df2[f'output_{attr}'].values,
+        df2[f'latent_{attr}'].values,
         bins=NUM_BINS,
         ax=axs[i//3, i % 3],
         color='orange',
         # label='AE_RTM_syn',
-        label='NNRegressor',
-        alpha=0.5,
+        label='AE_RTM_corr',
+        alpha=0.6,
     )
     axs[i//3, i % 3].set_xlabel(attr)
     axs[i//3, i % 3].set_ylabel('Frequency')
@@ -205,7 +206,7 @@ plt.tight_layout()
 # plt.savefig(os.path.join(
 #     SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_syn.png'), dpi=300)
 plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_real_testset_rtm_vars_v_NNRegressor.png'), dpi=300)
+    SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM.png'), dpi=300)
 plt.show()
 
 # %%
