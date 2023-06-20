@@ -1,10 +1,14 @@
 # This script will be used to test the pytorch implementation of RTM
+import logging
 import numpy as np
 import unittest
+
+import torch
 from rtm.rtm import RTM as RTM_np
 from rtm_torch.rtm import RTM as RTM_torch
 import re
 import sys
+import os
 import IPython
 
 rtm_np = RTM_np()
@@ -80,8 +84,11 @@ class RTMTest(unittest.TestCase):
         rtm_np.mod_exec(mode="batch")
         expected_result = rtm_np.myResult
         # run the rtm_torch
-        rtm_torch.para_reset(**para_dict)
-        rtm_torch.mod_exec(mode="batch")
+        # rtm_torch.para_reset(**para_dict)
+        # rtm_torch.mod_exec(mode="batch")
+        para_dict = {k: torch.tensor(v, dtype=torch.float32)
+                     for k, v in para_dict.items()}
+        rtm_torch.run(**para_dict)
         actual_result = rtm_torch.myResult.cpu().numpy()
 
         # compare the results
@@ -115,30 +122,49 @@ class RTMTest(unittest.TestCase):
 if __name__ == "__main__":
     # create a log file if it doesn't exist
     # sys.stdout = open("saved/log/rtm_unittest.log", "w")
-    stdout = sys.stdout
+    # stdout = sys.stdout
     # run the test
-    with open("saved/log/rtm_unittest.log", "w") as f:
-        sys.stdout = f
-        max_abs_diffs = []
-        mismatch_counts = []
-        total_counts = []
-        percent_mismatches = []
-        runs = 100
-        num_samples = 100
-        for i in range(runs):
-            print(f"Running Test {i}")
-            result = RTMTest().test_functionality(num_samples=num_samples)
-            max_abs_diffs.append(result[0])
-            mismatch_counts.append(result[1])
-            total_counts.append(result[2])
-            percent_mismatches.append(result[3])
+    # with open("/maps/ys611/ai-refined-rtm/saved/log/rtm_unittest.log", "w") as f:
+    # Create a custom logger
+    logger = logging.getLogger(__name__)
+    # Set level of logger
+    logger.setLevel(logging.INFO)
+    # Create a file handler
+    handler = logging.FileHandler('saved/log/rtm_unittest.log')
+    # Create a logging format
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    # Add the handler to the logger
+    logger.addHandler(handler)
 
-        print(
-            f"Max Absolute Difference over {runs*num_samples*13} elements: \
-                {max(max_abs_diffs)}")
-        print(f"Mismatched elements: {sum(mismatch_counts)}")
-        print(f"Total elements: {sum(total_counts)}")
-        print(f"Percent Mismatch: {round(sum(percent_mismatches)/runs, 3)}%")
+    # sys.stdout = f
+    max_abs_diffs = []
+    mismatch_counts = []
+    total_counts = []
+    percent_mismatches = []
+    runs = 100
+    num_samples = 100
+    for i in range(runs):
+        # print(f"Running Test {i}")
+        logger.info(f"Running Test {i}")
+        result = RTMTest().test_functionality(num_samples=num_samples)
+        max_abs_diffs.append(result[0])
+        mismatch_counts.append(result[1])
+        total_counts.append(result[2])
+        percent_mismatches.append(result[3])
 
-    sys.stdout = stdout
+    # print(
+    #     f"Max Absolute Difference over {runs*num_samples*13} elements: \
+    #         {max(max_abs_diffs)}")
+    logger.info(f"Max Absolute Difference over {runs*num_samples*13} elements: \
+            {max(max_abs_diffs)}")
+    # print(f"Mismatched elements: {sum(mismatch_counts)}")
+    logger.info(f"Mismatched elements: {sum(mismatch_counts)}")
+    # print(f"Total elements: {sum(total_counts)}")
+    logger.info(f"Total elements: {sum(total_counts)}")
+    # print(f"Percent Mismatch: {round(sum(percent_mismatches)/runs, 3)}%")
+    logger.info(f"Percent Mismatch: {round(sum(percent_mismatches)/runs, 3)}%")
+
+    # sys.stdout = stdout
     print("Done!")

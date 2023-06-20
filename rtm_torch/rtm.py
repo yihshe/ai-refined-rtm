@@ -94,7 +94,7 @@ class RTM():
         # create new Instance of the RTM
         # NOTE manually set the int_boost to 10000.0. The default value is 1.0
         return mod.InitModel(lop=lop, canopy_arch=canopy_arch, nodat=-999,
-                             int_boost=10000.0, s2s=sensor)
+                             int_boost=1.0, s2s=sensor)
 
     def para_init(self):
         # initialize the device

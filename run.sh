@@ -34,8 +34,8 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532/model_best.pth
 
 # Test the trained model of AE_RTM_corr on real test data
-python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
-        --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0615_171950/model_best.pth
+# python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0615_171950/model_best.pth
 
 
 # Generate synthetic data from RTM
@@ -61,5 +61,8 @@ python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
 
 # Train an autoencoder with RTM and with bias correction
 # python3 train.py --config configs/AE_RTM_corr.json 
+
+# Run unittest
+python3 -m pdb rtm_unittest.py
 
 
