@@ -39,7 +39,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 
 # Generate synthetic data from RTM
-# python3 datasets/sampling/sampling.py
+python3 datasets/sampling/sampling.py
 
 # Split the data into train and test
 # python3 datasets/preprocessing/train_test_split.py
@@ -63,6 +63,6 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 train.py --config configs/AE_RTM_corr.json 
 
 # Run unittest
-python3 -m pdb rtm_unittest.py
+# python3 -m pdb rtm_unittest.py
 
 

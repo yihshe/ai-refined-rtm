@@ -7,12 +7,12 @@ import seaborn as sns
 
 # %%
 # Original synthetic dataset
-# BASE_PATH = '/maps/ys611/ai-refined-rtm/data/synthetic/20230611/'
-# CSV_PATH = os.path.join(BASE_PATH, 'synthetic.csv')
-# SAVE_PATH = os.path.join(BASE_PATH, 'correlation')
-BASE_PATH = '/maps/ys611/ai-refined-rtm/data/real'
-CSV_PATH = os.path.join(BASE_PATH, 'BPWW_extract_2018_reshaped.csv')
+BASE_PATH = '/maps/ys611/ai-refined-rtm/data/synthetic/20230620/'
+CSV_PATH = os.path.join(BASE_PATH, 'synthetic_ellip_9.csv')
 SAVE_PATH = os.path.join(BASE_PATH, 'correlation')
+# BASE_PATH = '/maps/ys611/ai-refined-rtm/data/real'
+# CSV_PATH = os.path.join(BASE_PATH, 'BPWW_extract_2018_reshaped.csv')
+# SAVE_PATH = os.path.join(BASE_PATH, 'correlation')
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507/'
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532/'
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM/0612_175828_'
@@ -37,9 +37,9 @@ correlation_matrix = df.corr()
 #                                             'B02_BLUE':'B12_SWI2']
 # correlation_matrix = correlation_matrix.loc['latent_N':'latent_cd',
 #                                             'latent_N':'latent_cd']
-correlation_matrix = correlation_matrix.loc[S2_BANDS,
-                                            S2_BANDS]
-
+# correlation_matrix = correlation_matrix.loc[S2_BANDS,
+#                                             S2_BANDS]
+correlation_matrix = correlation_matrix.loc[ATTRS, S2_BANDS]
 
 # %%
 # Assuming correlation_matrix is your correlation DataFrame
@@ -67,8 +67,10 @@ plt.tight_layout()
 #     SAVE_PATH, 'correlation_matrix_latentvar_v_inputband_real.png'), dpi=300)
 # plt.savefig(os.path.join(
 #     SAVE_PATH, 'correlation_matrix_latentvar_v_latentvar_real.png'), dpi=300)
+# plt.savefig(os.path.join(
+#     SAVE_PATH, 'correlation_matrix_band_v_band.png'), dpi=300)
 plt.savefig(os.path.join(
-    SAVE_PATH, 'correlation_matrix_band_v_band.png'), dpi=300)
+    SAVE_PATH, 'correlation_syn_ellip_9_bands_v_var.png'), dpi=300)
 
 plt.show()
 

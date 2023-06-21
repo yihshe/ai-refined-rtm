@@ -119,9 +119,9 @@ class RTM:
         # typeLIDF: Leaf Angle Distribution (LIDF) type: 1 = Beta, 2 = Ellipsoidal
         # if typeLIDF = 2, LIDF is set to between 0 and 90 as Leaf Angle to calculate the Ellipsoidal distribution
         # if typeLIDF = 1, LIDF is set between 0 and 5 as index of one of the six Beta distributions
-        self.para_dict["typeLIDF"] = 2
+        self.para_dict["typeLIDF"] = 1
         # LIDF: Leaf Angle (LIDF), only used when LIDF is Ellipsoidal
-        self.para_dict["LIDF"] = 30
+        self.para_dict["LIDF"] = 5
         # hspot: Hot Spot Size Parameter (Hspot)
         self.para_dict["hspot"] = 0.01
         # tto: Observation zenith angle (Tto)
@@ -143,6 +143,8 @@ class RTM:
 
         # TODO set data_mean to None for future evaluations
         self.data_mean = None
+
+        self.reset_non_learnable = True
 
     def select_model(self,
                      sensor="Sentinel2_Full",
@@ -166,6 +168,15 @@ class RTM:
         # or should the model just learn a scale factor as in Pheno-VAE?
         self.para_dict.update(para_dict)
         # print("Parameters updated!")
+        if self.reset_non_learnable:
+            batch_size = len(list(para_dict.values())[0])
+            if batch_size > 1:
+                # Reset the non-learnable parameters
+                for k, v in self.para_dict.items():
+                    if k not in para_dict.keys():
+                        # extend the non-learnable parameters to batch size
+                        self.para_dict[k] = np.full(batch_size, v)
+            self.reset_non_learnable = False
 
     # execute the model to run the radiative transfer model
     def mod_exec(self, mode="single"):
