@@ -59,21 +59,21 @@ for band in S2_BANDS:
 # create one figure and plot each band as a subplot
 fig, axs = plt.subplots(3, 4, figsize=(20, 15))
 for i, band in enumerate(S2_BANDS):
-    #     sns.histplot(df[band].values, bins=NUM_BINS, ax=axs[i//4, i % 4])
-    #     axs[i//4, i % 4].set_title(f'Histogram of {band}')
-    #     axs[i//4, i % 4].set_xlabel('Reflectance')
-    #     axs[i//4, i % 4].set_ylabel('Frequency')
-    # plt.tight_layout()
-    # plt.savefig(os.path.join(SAVE_PATH, 'histogram_trainset_scaled.png'), dpi=300)
-    # plt.show()
     sns.histplot(df[band].values, bins=NUM_BINS, ax=axs[i//4, i % 4])
-    axs[i//4, i % 4].set_title(f'Histogram of {band}')
-    axs[i//4, i % 4].set_xlabel('Squared Reconstruction Error')
+    axs[i//4, i % 4].set_title(f'band')
+    axs[i//4, i % 4].set_xlabel('Reflectance')
     axs[i//4, i % 4].set_ylabel('Frequency')
 plt.tight_layout()
-plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_testset_scaled_loss.png'), dpi=300)
+plt.savefig(os.path.join(SAVE_PATH, 'histogram_trainset_scaled.png'), dpi=300)
 plt.show()
+#     sns.histplot(df[band].values, bins=NUM_BINS, ax=axs[i//4, i % 4])
+#     axs[i//4, i % 4].set_title(f'Histogram of {band}')
+#     axs[i//4, i % 4].set_xlabel('Squared Reconstruction Error')
+#     axs[i//4, i % 4].set_ylabel('Frequency')
+# plt.tight_layout()
+# plt.savefig(os.path.join(
+#     SAVE_PATH, 'histogram_testset_scaled_loss.png'), dpi=300)
+# plt.show()
 
 # %%
 # create one figure and plot each attribute as a subplot

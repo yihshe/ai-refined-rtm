@@ -7,8 +7,8 @@ import seaborn as sns
 
 # %%
 # Original synthetic dataset
-BASE_PATH = '/maps/ys611/ai-refined-rtm/data/synthetic/20230620/'
-CSV_PATH = os.path.join(BASE_PATH, 'synthetic_ellip_9.csv')
+BASE_PATH = '/maps/ys611/ai-refined-rtm/data/synthetic/20230621/'
+CSV_PATH = os.path.join(BASE_PATH, 'synthetic_beta_cd_np.csv')
 SAVE_PATH = os.path.join(BASE_PATH, 'correlation')
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/data/real'
 # CSV_PATH = os.path.join(BASE_PATH, 'BPWW_extract_2018_reshaped.csv')
@@ -39,7 +39,7 @@ correlation_matrix = df.corr()
 #                                             'latent_N':'latent_cd']
 # correlation_matrix = correlation_matrix.loc[S2_BANDS,
 #                                             S2_BANDS]
-correlation_matrix = correlation_matrix.loc[ATTRS, S2_BANDS]
+correlation_matrix = correlation_matrix.loc[['cd'], S2_BANDS]
 
 # %%
 # Assuming correlation_matrix is your correlation DataFrame
@@ -70,7 +70,7 @@ plt.tight_layout()
 # plt.savefig(os.path.join(
 #     SAVE_PATH, 'correlation_matrix_band_v_band.png'), dpi=300)
 plt.savefig(os.path.join(
-    SAVE_PATH, 'correlation_syn_ellip_9_bands_v_var.png'), dpi=300)
+    SAVE_PATH, 'correlation_syn_beta_cd_bands_v_var_np.png'), dpi=300)
 
 plt.show()
 

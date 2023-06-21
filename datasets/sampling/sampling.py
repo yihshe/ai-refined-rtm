@@ -71,7 +71,7 @@ def para_sampling(num_samples=100):
     para_dict["sd"] = uniform_sampling(0.0, 3000.0, num_samples)
     # NOTE h: Tree Height (H)
     para_dict["h"] = uniform_sampling(1.0, 50.0, num_samples)
-    # # NOTE cd: Crown Diameter (CD)
+    # NOTE cd: Crown Diameter (CD)
     para_dict["cd"] = uniform_sampling(1.0, 15.0, num_samples)
 
     return para_dict
