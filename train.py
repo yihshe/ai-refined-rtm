@@ -88,7 +88,7 @@ if __name__ == '__main__':
     wandb.init(
         project="ai-refined-rtm",
         entity="yihshe",
-        name=f"{config['arch']['type']}-{config['arch']['args']['hidden_dim']}",
+        name=f"{config['name']}-{config['arch']['args']['hidden_dim']}",
         config=config,
         mode="online" if config['trainer']['wandb'] else "disabled",
     )

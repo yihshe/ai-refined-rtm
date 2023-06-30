@@ -1,0 +1,53 @@
+{
+    "name": "NNRegressor",
+    "n_gpu": 1,
+    "arch": {
+        "type": "NNRegressor",
+        "args": {
+            "input_dim": 11,
+            "hidden_dim": 9
+        }
+    },
+    "data_loader": {
+        "type": "SpectrumS2DataLoader",
+        "args": {
+            "data_dir": "/maps/ys611/ai-refined-rtm/data/real/BPWW_extract_2018_reshaped_train_scaled.csv",
+            "batch_size": 64,
+            "shuffle": true,
+            "validation_split": 0.0,
+            "num_workers": 2
+        },
+        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/real/BPWW_extract_2018_reshaped_valid_scaled.csv",
+        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/real/BPWW_extract_2018_reshaped_test_scaled.csv"
+    },
+    "optimizer": {
+        "type": "Adam",
+        "args": {
+            "lr": 0.001,
+            "weight_decay": 1e-4,
+            "amsgrad": true
+        }
+    },
+    "loss": "mse_loss",
+    "metrics": [],
+    "lr_scheduler": {
+        "type": "StepLR",
+        "args": {
+            "step_size": 50,
+            "gamma": 0.1
+        }
+    },
+    "trainer": {
+        "epochs": 100,
+        "save_dir": "/maps/ys611/ai-refined-rtm/saved/",
+        "save_period": 10,
+        "verbosity": 2,
+        "monitor": "min val_loss",
+        "early_stop": 10,
+        "input_key": "spectrum",
+        "output_key": "spectrum",
+        "stablize_grad": false,
+        "tensorboard": false,
+        "wandb": true
+    }
+}

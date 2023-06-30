@@ -47,6 +47,9 @@ def main(config):
     total_loss = 0.0
     total_metrics = torch.zeros(len(metric_fns))
 
+    data_key = config['trainer']['input_key']
+    target_key = config['trainer']['output_key']
+
     # analyze the reconstruction loss per band
     S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
                 'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
@@ -57,8 +60,9 @@ def main(config):
         # for i, (data, target) in enumerate(tqdm(data_loader)):
         #     data, target = data.to(device), target.to(device)
         for batch_idx, data_dict in enumerate(data_loader):
-            data = data_dict['spectrum'].to(device)
-            target = data_dict['spectrum'].to(device)
+            # TODO change the input and target keys
+            data = data_dict[data_key].to(device)
+            target = data_dict[target_key].to(device)
             output = model(data)
 
             #
@@ -66,6 +70,7 @@ def main(config):
             #
 
             # concatenate the loss per band to the loss_analyzer
+            # calculate the squared loss of each element in the batch
             loss_per_band = torch.square(output-target)
             if batch_idx == 0:
                 loss_analyzer['loss_per_band'] = loss_per_band
@@ -117,6 +122,8 @@ if __name__ == '__main__':
                       help='path to latest checkpoint (default: None)')
     args.add_argument('-d', '--device', default=None, type=str,
                       help='indices of GPUs to enable (default: all)')
+    # args.add_argument('-a', '--analyze', default=False, type=bool,
+    #                   help='analyze and saved the test results (default: False)')
 
     config = ConfigParser.from_args(args)
     main(config)

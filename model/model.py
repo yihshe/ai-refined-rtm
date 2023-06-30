@@ -40,17 +40,20 @@ class VanillaAE(BaseModel):
             nn.ReLU(),
             nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(32, hidden_dim),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, hidden_dim),
             nn.ReLU(),
         )
         # TODO modify hidden_dim to 10, add ReLU to decoder and run it again
         self.decoder = nn.Sequential(
-            nn.Linear(hidden_dim, 32),
+            nn.Linear(hidden_dim, 16),
+            nn.ReLU(),
+            nn.Linear(16, 32),
             nn.ReLU(),
             nn.Linear(32, 64),
             nn.ReLU(),
             nn.Linear(64, input_dim),
-            # nn.ReLU(),
         )
 
     #  define encode function to further process the output of encoder
@@ -133,6 +136,30 @@ class AE_RTM(BaseModel):
         return x
 
 
+class AE_RTM_corr(AE_RTM):
+    """
+    Vanilla AutoEncoder (AE) with RTM as the decoder and additional layers for correction
+    input -> encoder (learnable) -> decoder (INFORM) -> correction -> output
+    """
+
+    def __init__(self, input_dim, hidden_dim, rtm_paras, standardization):
+        super().__init__(input_dim, hidden_dim, rtm_paras, standardization)
+        self.correction = nn.Sequential(
+            nn.Linear(len(self.bands_index), 4*len(self.bands_index)),
+            nn.ReLU(),
+            nn.Linear(4*len(self.bands_index), len(self.bands_index)),
+        )
+
+    def correct(self, x):
+        return self.correction(x)
+
+    def forward(self, x):
+        x = self.encode(x)
+        x = self.decode(x)
+        x = self.correct(x)
+        return x
+
+
 class NNRegressor(BaseModel):
     """
     Approximate Neural Network (ANN) with PyTorch
@@ -151,14 +178,17 @@ class NNRegressor(BaseModel):
             nn.Linear(32, 16),
             nn.ReLU(),
             nn.Linear(16, hidden_dim),
-            # nn.Softplus(),
-            # nn.ReLU(),
+            nn.Sigmoid(),
         )
 
     #  define encode function to further process the output of encoder
     def encode(self, x):
+        # output of the encoder is just an NNRegressor
+        # NOTE learning of latents should be conducted in normalized space
         return self.encoder(x)
 
     def forward(self, x):
+        # TODO forward mode can be either "train" or "infer" in the future
+        # so far it is only "train" thus the output is a scale factor
         x = self.encode(x)
         return x
