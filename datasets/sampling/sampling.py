@@ -27,14 +27,14 @@ def para_sampling(num_samples=100):
     # para_dict["psoil"] = np.random.uniform(0.0, 1.0, num_samples)
 
     # Leaf Model Parameters
-    # # NOTE N: Structure Parameter (N)
-    # para_dict["N"] = uniform_sampling(1.0, 4.0, num_samples)
-    # # NOTE cab: Chlorophyll A+B (cab)
-    # para_dict["cab"] = uniform_sampling(0.0, 100.0, num_samples)
-    # # NOTE cw: Water Content (Cw)
-    # para_dict["cw"] = uniform_sampling(0.0002, 0.08, num_samples)
-    # # NOTE cm: Dry Matter (cm)
-    # para_dict["cm"] = uniform_sampling(0.0, 0.05, num_samples)
+    # NOTE N: Structure Parameter (N)
+    para_dict["N"] = uniform_sampling(1.0, 4.0, num_samples)
+    # NOTE cab: Chlorophyll A+B (cab)
+    para_dict["cab"] = uniform_sampling(0.0, 100.0, num_samples)
+    # NOTE cw: Water Content (Cw)
+    para_dict["cw"] = uniform_sampling(0.0002, 0.08, num_samples)
+    # NOTE cm: Dry Matter (cm)
+    para_dict["cm"] = uniform_sampling(0.0, 0.05, num_samples)
     # # car: Carotenoids (Ccx)
     # para_dict["car"] = np.random.uniform(0.0, 30.0, num_samples)
     # # cbrown: Brown Pigments (Cbrown)
@@ -48,6 +48,7 @@ def para_sampling(num_samples=100):
 
     # Canopy Model Parameters
     # NOTE LAI: (Single) Leaf Area Index (LAI)
+    # NOTE output of current RTM is not sensitive to LAI higher than 3
     para_dict["LAI"] = uniform_sampling(0.01, 15.0, num_samples)
     # # typeLIDF: Leaf Angle Distribution (LIDF) type: 1 = Beta, 2 = Ellipsoidal
     # # if typeLIDF = 2, LIDF is set to between 0 and 90 as Leaf Angle to calculate the Ellipsoidal distribution
@@ -77,10 +78,21 @@ def para_sampling(num_samples=100):
     return para_dict
 
 
-def run_sampling():
+def cd(cd, sd):
+    # calculate the crown diameter given stem density using tensor
+    pass
+
+
+def coverage(cd, sd):
+    # calculate the crown coverage given stem density using tensor
+    pass
+
+
+def run_sampling(sampling_np=False):
     # sample the dataset and save it to a csv file
     rtm = RTM()
-    rtm_np = RTM_np()
+    if sampling_np:
+        rtm_np = RTM_np()
     for i in range(100):
         para_dict = para_sampling(num_samples=100)
         # run the RTM without tracking gradients
@@ -91,29 +103,34 @@ def run_sampling():
         paras = para_dict if i == 0 else {k: torch.cat(
             (paras[k], para_dict[k]), dim=0) for k in para_dict.keys()}
 
-        # run the RTM_np
-        para_dict_np = {k: v.cpu().numpy() for k, v in para_dict.items()}
-        rtm_np.para_reset(**para_dict_np)
-        rtm_np.mod_exec(mode="batch")
-        spectrums_np = rtm_np.myResult if i == 0 else np.concatenate(
-            (spectrums_np, rtm_np.myResult), axis=0)
+        if sampling_np:
+            # run the RTM_np
+            para_dict_np = {k: v.cpu().numpy() for k, v in para_dict.items()}
+            rtm_np.para_reset(**para_dict_np)
+            rtm_np.mod_exec(mode="batch")
+            spectrums_np = rtm_np.myResult if i == 0 else np.concatenate(
+                (spectrums_np, rtm_np.myResult), axis=0)
 
         print(f"Finished {i+1}00 samples")
-
-    # save the sampled dataset
-    df = pd.DataFrame(spectrums.cpu().numpy(), columns=S2_FULL_BANDS)
-    df_np = pd.DataFrame(spectrums_np, columns=S2_FULL_BANDS)
-    for attr in paras.keys():
-        df[attr] = paras[attr].cpu().numpy()
-        df_np[attr] = paras[attr].cpu().numpy()
 
     # mkdir if not exist
     if not os.path.exists(SAVE_PATH):
         os.makedirs(SAVE_PATH, exist_ok=True)
+
+    # save the sampled dataset
+    df = pd.DataFrame(spectrums.cpu().numpy(), columns=S2_FULL_BANDS)
+    for attr in paras.keys():
+        df[attr] = paras[attr].cpu().numpy()
     # save the dataset
     df.to_csv(os.path.join(SAVE_PATH, "synthetic_beta_5.csv"), index=False)
-    df_np.to_csv(os.path.join(
-        SAVE_PATH, "synthetic_beta_5_np.csv"), index=False)
+
+    if sampling_np:
+        df_np = pd.DataFrame(spectrums_np, columns=S2_FULL_BANDS)
+        for attr in paras.keys():
+            df_np[attr] = paras[attr].cpu().numpy()
+        df_np.to_csv(os.path.join(
+            SAVE_PATH, "synthetic_beta_5_np.csv"), index=False)
+
     print("Done!")
 
 

@@ -54,7 +54,8 @@ def main(config):
     S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
                 'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
                 'B12_SWI2']
-    ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'cd']
+    # ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'cd']
+    ATTRS = ['cd']
 
     analyzer = {}
 
@@ -141,10 +142,10 @@ def main(config):
     df['sample_id'] = analyzer['sample_id']
     df['class'] = analyzer['class']
     df['date'] = analyzer['date']
-    df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer_real.csv',
+    df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer.csv',
               index=False)
     logger.info('Analyzer saved to {}'.format(
-        str(config.resume).split('.pth')[0]+'_testset_analyzer_real.csv'
+        str(config.resume).split('.pth')[0]+'_testset_analyzer.csv'
     ))
 
 

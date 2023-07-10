@@ -48,6 +48,6 @@
         "output_key": "rtm_paras",
         "stablize_grad": false,
         "tensorboard": false,
-        "wandb": true
+        "wandb": false
     }
 }
