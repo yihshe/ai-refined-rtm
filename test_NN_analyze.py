@@ -54,8 +54,8 @@ def main(config):
     S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
                 'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
                 'B12_SWI2']
-    # ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'cd']
-    ATTRS = ['cd']
+    ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'cd']
+    # ATTRS = ['cd']
 
     analyzer = {}
 
@@ -134,19 +134,19 @@ def main(config):
                 data_concat(analyzer, 'class', data_dict['class'])
                 data_concat(analyzer, 'date', data_dict['date'])
 
-    # save the analyzer to csv using pandas
-    columns = ['output'+'_'+b for b in ATTRS]
-    data = analyzer['output'].cpu().numpy()
-    df = pd.DataFrame(columns=columns, data=data)
-    # add the sample_id, class, and date from the real testset
-    df['sample_id'] = analyzer['sample_id']
-    df['class'] = analyzer['class']
-    df['date'] = analyzer['date']
-    df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer.csv',
-              index=False)
-    logger.info('Analyzer saved to {}'.format(
-        str(config.resume).split('.pth')[0]+'_testset_analyzer.csv'
-    ))
+        # save the analyzer to csv using pandas
+        columns = ['output'+'_'+b for b in ATTRS]
+        data = analyzer['output'].cpu().numpy()
+        df = pd.DataFrame(columns=columns, data=data)
+        # add the sample_id, class, and date from the real testset
+        df['sample_id'] = analyzer['sample_id']
+        df['class'] = analyzer['class']
+        df['date'] = analyzer['date']
+        df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer.csv',
+                  index=False)
+        logger.info('Analyzer saved to {}'.format(
+            str(config.resume).split('.pth')[0]+'_testset_analyzer.csv'
+        ))
 
 
 def data_concat(analyzer: dict, key: str, data):

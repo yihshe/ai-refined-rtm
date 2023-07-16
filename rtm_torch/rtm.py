@@ -167,7 +167,7 @@ class RTM():
         # LAIu: Undergrowth LAI (LAIu)
         self.para_dict["LAIu"] = 0.1
         # sd: Stem Density (SD)
-        self.para_dict["sd"] = 650
+        self.para_dict["sd"] = 650  # 628, 795
         # h: Tree Height (H)
         self.para_dict["h"] = 20
         # cd: Crown Diameter (CD)

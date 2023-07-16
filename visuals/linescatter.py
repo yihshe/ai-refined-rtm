@@ -13,8 +13,8 @@ import os
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507'
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0615_171950'
 # CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer.csv')
-BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/NNRegressor_cd/0622_215152'
-CSV_PATH = os.path.join(BASE_PATH, 'checkpoint-epoch30_testset_analyzer.csv')
+BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/NNRegressor_leaf_full_struc_reduc_filter/0716_105849'
+CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer_syn.csv')
 
 SAVE_PATH = os.path.join(BASE_PATH, 'linescatter')
 if not os.path.exists(SAVE_PATH):
@@ -23,12 +23,12 @@ if not os.path.exists(SAVE_PATH):
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
             'B12_SWI2']
-# ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'cd']
-ATTRS = ['cd']
+ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'cd']
+# ATTRS = ['cd']
 
 df = pd.read_csv(CSV_PATH)
 
-#%%
+# %%
 # Get a single plot for a single variable
 var = 'cd'
 df_testset = pd.read_csv(

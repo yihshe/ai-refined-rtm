@@ -12,9 +12,11 @@ import os
 #             'B12_SWI2']
 # SAVE_PATH = '/maps/ys611/ai-refined-rtm/data/real'
 # ATTRS = ['class', 'sample_id', 'date']
-BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230611/'
-CSV_PATH = os.path.join(BASE_DIR, "synthetic_train_valid.csv")
-CSV_PATH2 = os.path.join(BASE_DIR, "synthetic_test.csv")
+suffix = "leaf_full_struc_reduc_laiu_full_no_3_vars_norm"
+BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230715/'
+SAVE_DIR = os.path.join(BASE_DIR, suffix)
+CSV_PATH = os.path.join(SAVE_DIR, "synthetic_train_valid.csv")
+CSV_PATH2 = os.path.join(SAVE_DIR, "synthetic_test.csv")
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
             'B12_SWI2']
@@ -91,12 +93,12 @@ def normalize(df, df2, columns):
     df_train = df[columns].iloc[train_idx]
     df_valid = df[columns].iloc[valid_idx]
     df_test = df2[columns]
-    for col in columns:
-        min = rtm_paras[col]['min']
-        max = rtm_paras[col]['max']
-        df_train[col] = (df_train[col] - min) / (max - min)
-        df_valid[col] = (df_valid[col] - min) / (max - min)
-        df_test[col] = (df_test[col] - min) / (max - min)
+    # for col in columns:
+    #     min = rtm_paras[col]['min']
+    #     max = rtm_paras[col]['max']
+    #     df_train[col] = (df_train[col] - min) / (max - min)
+    #     df_valid[col] = (df_valid[col] - min) / (max - min)
+    #     df_test[col] = (df_test[col] - min) / (max - min)
     return df_train, df_valid, df_test
 
 
@@ -106,6 +108,8 @@ scaler, df_train_scaled, df_valid_scaled, df_test_scaled = standardize(
 # normalize rtm parameters for only synthetic datasets
 df_train_scaled2, df_valid_scaled2, df_test_scaled2 = normalize(
     df, df2, ATTRS)
+# scaler2, df_train_scaled2, df_valid_scaled2, df_test_scaled2 = standardize(
+#     df, df2, ATTRS)
 
 df_train_scaled = pd.DataFrame(
     np.hstack((df_train_scaled, df_train_scaled2)), columns=S2_BANDS+ATTRS)
@@ -114,8 +118,8 @@ df_valid_scaled = pd.DataFrame(
 df_test_scaled = pd.DataFrame(
     np.hstack((df_test_scaled, df_test_scaled2)), columns=S2_BANDS+ATTRS)
 
-np.save(os.path.join(BASE_DIR, 'train_x_mean.npy'), scaler.mean_)
-np.save(os.path.join(BASE_DIR, 'train_x_scale.npy'), scaler.scale_)
+np.save(os.path.join(SAVE_DIR, 'train_x_mean.npy'), scaler.mean_)
+np.save(os.path.join(SAVE_DIR, 'train_x_scale.npy'), scaler.scale_)
 # np.save(os.path.join(BASE_DIR, 'train_y_mean.npy'), scaler2.mean_)
 # np.save(os.path.join(BASE_DIR, 'train_y_scale.npy'), scaler2.scale_)
 
@@ -154,12 +158,12 @@ np.save(os.path.join(BASE_DIR, 'train_x_scale.npy'), scaler.scale_)
 #     os.path.join(SAVE_PATH, 'BPWW_extract_2018_reshaped_test_scaled.csv'),
 #     index=False)
 df_train_scaled.to_csv(
-    os.path.join(BASE_DIR, 'synthetic_train_scaled.csv'),
+    os.path.join(SAVE_DIR, 'synthetic_train_scaled.csv'),
     index=False)
 df_valid_scaled.to_csv(
-    os.path.join(BASE_DIR, 'synthetic_valid_scaled.csv'),
+    os.path.join(SAVE_DIR, 'synthetic_valid_scaled.csv'),
     index=False)
 df_test_scaled.to_csv(
-    os.path.join(BASE_DIR, 'synthetic_test_scaled.csv'),
+    os.path.join(SAVE_DIR, 'synthetic_test_scaled.csv'),
     index=False)
 print('done')

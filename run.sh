@@ -18,8 +18,8 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/VanillaAE_scaled/0612_220221/model_best.pth
 
 # Test the trained model of NN regressor on synthetic data
-# python3 -m pdb test_NN_analyze.py --config configs/NN_regressor.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507/model_best.pth
+python3 -m pdb test_NN_analyze.py --config configs/NN_regressor.json \
+        --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor_leaf_full_struc_reduc_cd_cal_train_cd/0716_201439/model_best.pth
 
 # Test the trained model of NN Regressor on real test data
 # python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
@@ -39,7 +39,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 
 # Generate synthetic data from RTM
-# python3 datasets/sampling/sampling.py
+# python3 -m pdb datasets/sampling/sampling.py
 
 # Split the data into train and test
 # python3 datasets/preprocessing/train_test_split.py
@@ -53,7 +53,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor_cd/0622_215152/checkpoint-epoch30.pth
 
-python3 datasets/preprocessing/reshape.py
+# python3 datasets/preprocessing/reshape.py
 
 # Train a simple vanilla autoencoder with RTM
 # python3 train.py --config configs/AE_RTM.json 
