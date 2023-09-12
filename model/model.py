@@ -5,26 +5,6 @@ import torch.nn.functional as F
 from base import BaseModel
 from rtm_torch.rtm import RTM
 
-
-class MnistModel(BaseModel):
-    def __init__(self, num_classes=10):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
-        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
-        self.conv2_drop = nn.Dropout2d()
-        self.fc1 = nn.Linear(320, 50)
-        self.fc2 = nn.Linear(50, num_classes)
-
-    def forward(self, x):
-        x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-        x = x.view(-1, 320)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
-        x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
-
-
 class VanillaAE(BaseModel):
     """
     Vanilla AutoEncoder (AE) 
@@ -99,7 +79,9 @@ class AE_RTM(BaseModel):
         )
         # The decoder is the INFORM RTM with fixed parameters
         self.decoder = RTM()
-        # NOTE ["N", "cab", "cw", "cm", "LAI", "LAIu", "sd", "h", "cd"]
+        # NOTE output of rtm_paras from the encoder:
+        # ["N", "cab", "cw", "cm", "LAI", "LAIu", "sd", "h", "fc"]
+        # then, cd will be calculated from sd and fc
         self.rtm_paras = rtm_paras
         S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
                          'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
@@ -126,6 +108,10 @@ class AE_RTM(BaseModel):
             min = self.rtm_paras[para_name]['min']
             max = self.rtm_paras[para_name]['max']
             para_dict[para_name] = x[:, i]*(max-min)+min
+        assert 'fc' in para_dict.keys(), "fc must be included in the rtm_paras"
+        # calculate cd from sd and fc
+        para_dict['cd'] = torch.sqrt(
+            (para_dict['fc']*10000)/(torch.pi*para_dict["sd"]))*2
 
         output = self.decoder.run(**para_dict)[:, self.bands_index]
         return (output-self.x_mean)/self.x_scale

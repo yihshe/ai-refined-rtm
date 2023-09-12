@@ -67,6 +67,7 @@ class SyntheticS2(data.Dataset):
         if self.transform is not None:
             spectrum = self.transform(spectrum)
         rtm_paras = sample[self.rtm_paras].values.astype('float32')
+        # TODO calculate cd using fc and sd
 
         data_dict = {
             'spectrum': spectrum,
