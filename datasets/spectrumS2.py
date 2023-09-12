@@ -49,9 +49,10 @@ class SyntheticS2(data.Dataset):
         # self.attr_info = ['class', 'sample_id', 'date']
         # self.rtm_paras = ['N', 'cab', 'cw', 'cm',
         #                   'LAI', 'LIDF', 'LAIu', 'sd', 'h', 'cd']
+        # self.rtm_paras = ['N', 'cab', 'cw', 'cm',
+        #                   'LAI', 'LAIu', 'sd', 'h', 'cd']
         self.rtm_paras = ['N', 'cab', 'cw', 'cm',
-                          'LAI', 'LAIu', 'sd', 'h', 'cd']
-        # self.rtm_paras = ['cd']
+                          'LAI', 'LAIu', 'sd', 'h', 'fc']
         # NOTE currently the ground truth of latent variables are not available
 
     def __len__(self):

@@ -7,7 +7,7 @@ import pandas as pd
 torch.manual_seed(0)
 np.random.seed(0)
 
-SAVE_PATH = "/maps/ys611/ai-refined-rtm/data/synthetic/20230715"
+SAVE_PATH = "/maps/ys611/ai-refined-rtm/data/synthetic/20230816"
 # B01 and B10 will not be used in the training
 S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
                  'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
@@ -41,16 +41,16 @@ def para_sampling(num_samples=100):
     # para_dict["cm"] = uniform_sampling(0.0, 0.05, num_samples)
     # NOTE N: Structure Parameter (N)
     para_dict["N"], para_norm_dict["N"] = uniform_sampling(
-        1.0, 4.0, num_samples)
+        1.0, 3.0, num_samples)
     # NOTE cab: Chlorophyll A+B (cab)
     para_dict["cab"], para_norm_dict["cab"] = uniform_sampling(
-        0.0, 100.0, num_samples)
+        10.0, 80.0, num_samples)
     # NOTE cw: Water Content (Cw)
     para_dict["cw"], para_norm_dict["cw"] = uniform_sampling(
-        0.0002, 0.08, num_samples)
+        0.001, 0.02, num_samples)
     # NOTE cm: Dry Matter (cm)
     para_dict["cm"], para_norm_dict["cm"] = uniform_sampling(
-        0.0, 0.05, num_samples)
+        0.005, 0.05, num_samples)
 
     # # car: Carotenoids (Ccx)
     # para_dict["car"] = np.random.uniform(0.0, 30.0, num_samples)
@@ -95,24 +95,28 @@ def para_sampling(num_samples=100):
     # para_dict["cd"] = uniform_sampling(1.0, 15.0, num_samples)
     # NOTE LAIu: Undergrowth LAI (LAIu)
     para_dict["LAIu"], para_norm_dict["LAIu"] = uniform_sampling(
-        0.01, 3.0, num_samples)
+        0.01, 1.0, num_samples)
     # NOTE sd: Stem Density (SD)
     para_dict["sd"], para_norm_dict["sd"] = uniform_sampling(
-        0.0, 1000.0, num_samples)
+        100, 5000, num_samples)
     # para_dict["sd"], para_norm_dict["sd"] = uniform_sampling(
     #     0.0, 628.0, num_samples)  # corresponding to cd = 4.5
     # NOTE h: Tree Height (H)
     para_dict["h"], para_norm_dict["h"] = uniform_sampling(
-        1.0, 17.0, num_samples)
+        1.0, 15.0, num_samples)
     # NOTE cd: Crown Diameter (CD)
-    para_dict["cd"], para_norm_dict["cd"] = uniform_sampling(
-        1.0, 5.0, num_samples)
+    # para_dict["cd"], para_norm_dict["cd"] = uniform_sampling(
+    #     1.0, 5.0, num_samples)
+    # calculate cd from sampled sd and fractional coverage fc
+    fc, para_norm_dict["fc"] = uniform_sampling(0.1, 1, num_samples)
+    para_dict["cd"] = torch.sqrt((fc*10000)/(torch.pi*para_dict["sd"]))*2
     return para_dict, para_norm_dict
 
 
 def cd(sd):
     # calculate the crown diameter given stem density using tensor
     # NOTE: as start just try the simple method to calculate cd
+    # first samle the coverage
     cd = torch.sqrt(10000/(torch.pi*sd))*2
     return cd
 
@@ -133,7 +137,7 @@ def run_sampling(sampling_np=False):
     rtm = RTM()
     if sampling_np:
         rtm_np = RTM_np()
-    for i in range(100):
+    for i in range(180):
         para_dict, para_norm_dict = para_sampling(num_samples=100)
         # replace the cd with the calculated value
         # cov = coverage(para_dict["cd"], para_dict["sd"])
@@ -145,11 +149,11 @@ def run_sampling(sampling_np=False):
             spectra = rtm.run(**para_dict)
 
         # NOTE additional filter to make sure the coverage is smaller than 10000
-        cov = coverage(para_dict["cd"], para_dict["sd"])
-        para_dict = {k: v[cov <= 10000] for k, v in para_dict.items()}
-        para_norm_dict = {k: v[cov <= 10000]
-                          for k, v in para_norm_dict.items()}
-        spectra = spectra[cov <= 10000]
+        # cov = coverage(para_dict["cd"], para_dict["sd"])
+        # para_dict = {k: v[cov <= 10000] for k, v in para_dict.items()}
+        # para_norm_dict = {k: v[cov <= 10000]
+        #                   for k, v in para_norm_dict.items()}
+        # spectra = spectra[cov <= 10000]
 
         spectrums = spectra if i == 0 else torch.cat(
             (spectrums, spectra), dim=0)
@@ -179,7 +183,7 @@ def run_sampling(sampling_np=False):
         df[attr] = paras[attr].cpu().numpy()
     # save the dataset
     df.to_csv(os.path.join(
-        SAVE_PATH, "synthetic_leaf_full_struc_reduc_norm_filter.csv"), index=False)
+        SAVE_PATH, "synthetic.csv"), index=False)
 
     if sampling_np:
         df_np = pd.DataFrame(spectrums_np, columns=S2_FULL_BANDS)

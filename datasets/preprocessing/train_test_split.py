@@ -8,10 +8,15 @@ from sklearn.model_selection import train_test_split
 #                               'data/BPWW_extract_2018_reshaped_train.csv')
 # SAVE_DIR_TEST = os.path.join(BASE_DIR,
 #                              'data/BPWW_extract_2018_reshaped_test.csv')
-suffix = "leaf_full_struc_reduc_laiu_full_no_3_vars_norm"
-BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230715/'
-DATA_DIR = os.path.join(BASE_DIR, f'synthetic_{suffix}.csv')
-SAVE_DIR = os.path.join(BASE_DIR, suffix)
+
+# suffix = "all_CA_range_norm"
+# BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230715/'
+# DATA_DIR = os.path.join(BASE_DIR, f'synthetic_{suffix}.csv')
+# SAVE_DIR = os.path.join(BASE_DIR, suffix)
+
+BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230816/'
+DATA_DIR = os.path.join(BASE_DIR, 'synthetic_rand_noise.csv')
+SAVE_DIR = os.path.join(BASE_DIR, 'synthetic_rand_noise')
 SAVE_DIR_TRAIN = os.path.join(SAVE_DIR, 'synthetic_train_valid.csv')
 SAVE_DIR_TEST = os.path.join(SAVE_DIR, 'synthetic_test.csv')
 

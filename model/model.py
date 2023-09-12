@@ -178,7 +178,7 @@ class NNRegressor(BaseModel):
             nn.Linear(32, 16),
             nn.ReLU(),
             nn.Linear(16, hidden_dim),
-            # nn.Sigmoid(),
+            nn.Sigmoid(),
         )
 
     #  define encode function to further process the output of encoder

@@ -12,9 +12,12 @@ import os
 #             'B12_SWI2']
 # SAVE_PATH = '/maps/ys611/ai-refined-rtm/data/real'
 # ATTRS = ['class', 'sample_id', 'date']
-suffix = "leaf_full_struc_reduc_laiu_full_no_3_vars_norm"
-BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230715/'
-SAVE_DIR = os.path.join(BASE_DIR, suffix)
+
+# suffix = "all_CA_range_norm"
+# BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230715/'
+# SAVE_DIR = os.path.join(BASE_DIR, suffix)
+BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230816/'
+SAVE_DIR = os.path.join(BASE_DIR, 'synthetic_sys_bias')
 CSV_PATH = os.path.join(SAVE_DIR, "synthetic_train_valid.csv")
 CSV_PATH2 = os.path.join(SAVE_DIR, "synthetic_test.csv")
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
@@ -90,6 +93,9 @@ def standardize(df, df2, columns):
 
 
 def normalize(df, df2, columns):
+    """
+    No need to normalize if the input attributes are already normalized
+    """
     df_train = df[columns].iloc[train_idx]
     df_valid = df[columns].iloc[valid_idx]
     df_test = df2[columns]
