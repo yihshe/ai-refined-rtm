@@ -19,15 +19,18 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # Test the trained model of NN regressor on synthetic data
 # python3 -m pdb test_NN_analyze.py --config configs/NN_regressor.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor_all_CA_range_norm/0728_105359/model_best.pth
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor_noised_data/0912_043905/model_best.pth
 
 # Test the trained model of NN Regressor on real test data
 # python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507/model_best.pth
 
 # Test the trained model of AE_RTM_syn on synthetic data
-# python3 -m pdb test_AE_syn_analyze.py --config configs/AE_RTM_syn.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532/model_best.pth
+python3 test_AE_syn_analyze.py --config configs/AE_RTM_syn.json \
+        --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn_noised_data/0913_075425/model_best.pth
+
+python3 test_AE_syn_analyze.py --config configs/AE_RTM_corr.json \
+        --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr_syn_noised_data/0913_112305/model_best.pth
 
 # Test the trained model of AE_RTM_syn on real test data
 # python3 -m pdb test_AE_syn_analyze.py --config configs/AE_RTM_syn_infer.json \
@@ -56,16 +59,16 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 datasets/preprocessing/reshape.py
 
 # Train a simple vanilla autoencoder without RTM
-python3 train.py --config configs/vanilla_AE.json
+# python3 train.py --config configs/vanilla_AE.json
 
 # Train a simple vanilla autoencoder with RTM
 # python3 train.py --config configs/AE_RTM.json 
 
 # Train a simple vanilla autoencoder with RTM on synthetic data
-python3 train.py --config configs/AE_RTM_syn.json
+# python3 train.py --config configs/AE_RTM_syn.json
 
 # Train an autoencoder with RTM and with bias correction
-python3 train.py --config configs/AE_RTM_corr.json 
+# python3 train.py --config configs/AE_RTM_corr.json 
 
 # Run unittest
 # python3 -m pdb rtm_unittest.py

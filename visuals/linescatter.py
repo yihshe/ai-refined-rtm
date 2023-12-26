@@ -13,12 +13,13 @@ import os
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507'
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0615_171950'
 # CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer.csv')
-# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/NNRegressor_all_CA_range_norm/0728_105359'
-# CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer_syn.csv')
-BASE_PATH = '/maps/ys611/ai-refined-rtm/data/synthetic/20230816'
-CSV_PATH1 = os.path.join(BASE_PATH, "synthetic.csv")
-CSV_PATH2 = os.path.join(BASE_PATH, "synthetic_rand_noise.csv")
-CSV_PATH3 = os.path.join(BASE_PATH, "synthetic_sys_bias.csv")
+BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr_syn_noised_data/0913_112305'
+CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer_syn.csv')
+
+# BASE_PATH = '/maps/ys611/ai-refined-rtm/data/synthetic/20230816'
+# CSV_PATH1 = os.path.join(BASE_PATH, "synthetic.csv")
+# CSV_PATH2 = os.path.join(BASE_PATH, "synthetic_rand_noise.csv")
+# CSV_PATH3 = os.path.join(BASE_PATH, "synthetic_sys_bias.csv")
 
 SAVE_PATH = os.path.join(BASE_PATH, 'linescatter')
 if not os.path.exists(SAVE_PATH):
@@ -30,15 +31,15 @@ S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
 # ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'cd']
 ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'fc']
 
-# df = pd.read_csv(CSV_PATH)
-df1 = pd.read_csv(CSV_PATH1)
-df2 = pd.read_csv(CSV_PATH2)
-df3 = pd.read_csv(CSV_PATH3)
-# rename the S2_BANDS columns of each csv and concat them
-df1 = df1.rename(columns={k: 'orig_'+k for k in S2_BANDS})
-df2 = df2.rename(columns={k: 'rand_noise_'+k for k in S2_BANDS})
-df3 = df3.rename(columns={k: 'sys_bias_'+k for k in S2_BANDS})
-df = pd.concat([df1, df2, df3], axis=1)
+df = pd.read_csv(CSV_PATH)
+# df1 = pd.read_csv(CSV_PATH1)
+# df2 = pd.read_csv(CSV_PATH2)
+# df3 = pd.read_csv(CSV_PATH3)
+# # rename the S2_BANDS columns of each csv and concat them
+# df1 = df1.rename(columns={k: 'orig_'+k for k in S2_BANDS})
+# df2 = df2.rename(columns={k: 'rand_noise_'+k for k in S2_BANDS})
+# df3 = df3.rename(columns={k: 'sys_bias_'+k for k in S2_BANDS})
+# df = pd.concat([df1, df2, df3], axis=1)
 
 
 # %%
@@ -83,7 +84,7 @@ fig, axs = plt.subplots(3, 3, figsize=(20, 15))
 for i, attr in enumerate(ATTRS):
     ax = axs[i//3, i % 3]
     # adjust the point size and alpha and color
-    sns.scatterplot(x='target_'+attr, y='output_'+attr,
+    sns.scatterplot(x='target_'+attr, y='latent_'+attr,
                     data=df, ax=ax, s=8, alpha=0.5)
     fontsize = 16
     ax.set_title(attr, fontsize=fontsize)
