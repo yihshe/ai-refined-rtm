@@ -1,12 +1,13 @@
 # %%
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 # %%
 # plot the histogram of the training data
-# CSV_PATH = '/maps/ys611/ai-refined-rtm/data/BPWW_extract_2018_reshaped_train_scaled.csv'
-# SAVE_PATH = '/maps/ys611/ai-refined-rtm/visuals/histograms'
+# CSV_PATH = '/maps/ys611/ai-refined-rtm/data/synthetic/20230611/synthetic_train_scaled.csv'
+# SAVE_PATH = '/maps/ys611/ai-refined-rtm/data/synthetic/20230611/histograms'
 
 # # plot the histogram of reconstrucion error
 # CSV_PATH = '/maps/ys611/ai-refined-rtm/saved/models/VanillaAE_scaled/0510_211403/model_best_loss_analyzer.csv'
@@ -20,7 +21,6 @@ import os
 # BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532'
 BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0615_171950'
 
-# CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer.csv')
 CSV_PATH = os.path.join(BASE_PATH, 'model_best_testset_analyzer.csv')
 SAVE_PATH = os.path.join(BASE_PATH, 'histograms')
 
@@ -79,7 +79,7 @@ plt.show()
 # create one figure and plot each attribute as a subplot
 fig, axs = plt.subplots(3, 3, figsize=(20, 15))
 for i, attr in enumerate(ATTRS):
-    sns.histplot(df[f'latent_{attr}'].values,
+    sns.histplot(df[f'{attr}'].values,
                  bins=NUM_BINS, ax=axs[i//3, i % 3])
     # axs[i//3, i % 3].set_title(f'{attr}')
     axs[i//3, i % 3].set_xlabel(attr)
@@ -89,7 +89,7 @@ for i, attr in enumerate(ATTRS):
     axs[i//3, i % 3].yaxis.label.set_size(18)
 plt.tight_layout()
 plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_real_testset_rtm_vars.png'), dpi=300)
+    SAVE_PATH, 'histogram_trainset_scaled_rtm_vars.png'), dpi=300)
 plt.show()
 
 # %%
@@ -172,6 +172,53 @@ if not os.path.exists(SAVE_PATH):
 # read the csv file
 df1 = pd.read_csv(CSV_PATH1)
 df2 = pd.read_csv(CSV_PATH2)
+# tranform the variables back to their original scale
+rtm_paras = {
+                "N": {
+                    "min": 1.0,
+                    "max": 4.0
+                },
+                "cab": {
+                    "min": 0.0,
+                    "max": 100.0
+                },
+                "cw": {
+                    "min": 0.0002,
+                    "max": 0.08
+                },
+                "cm": {
+                    "min": 0.0,
+                    "max": 0.05
+                },
+                "LAI": {
+                    "min": 0.01,
+                    "max": 15.0
+                },
+                "LAIu": {
+                    "min": 0.01,
+                    "max": 3.0
+                },
+                "sd": {
+                    "min": 0.0,
+                    "max": 3000.0
+                },
+                "h": {
+                    "min": 1.0,
+                    "max": 50.0
+                },
+                "cd": {
+                    "min": 1.0,
+                    "max": 15.0
+                }
+            }
+
+for attr in ATTRS:
+    df1[f'latent_{attr}'] = df1[f'latent_{attr}'] * \
+        (rtm_paras[attr]['max'] - rtm_paras[attr]['min']) + \
+        rtm_paras[attr]['min']
+    df2[f'latent_{attr}'] = df2[f'latent_{attr}'] * \
+        (rtm_paras[attr]['max'] - rtm_paras[attr]['min']) + \
+        rtm_paras[attr]['min']
 
 # %%
 # create one figure and plot both variable predictions of different models as a subplot
@@ -181,7 +228,7 @@ for i, attr in enumerate(ATTRS):
         df1[f'latent_{attr}'].values,
         bins=NUM_BINS,
         ax=axs[i//3, i % 3],
-        color='blue',
+        color='red',
         label='AE_RTM',
         alpha=0.5,
     )
@@ -189,7 +236,7 @@ for i, attr in enumerate(ATTRS):
         df2[f'latent_{attr}'].values,
         bins=NUM_BINS,
         ax=axs[i//3, i % 3],
-        color='orange',
+        color='blue',
         # label='AE_RTM_syn',
         label='AE_RTM_corr',
         alpha=0.6,
@@ -206,7 +253,7 @@ plt.tight_layout()
 # plt.savefig(os.path.join(
 #     SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_syn.png'), dpi=300)
 plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM.png'), dpi=300)
+    SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_orig_scale.png'), dpi=300)
 plt.show()
 
 # %%

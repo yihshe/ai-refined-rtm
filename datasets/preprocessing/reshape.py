@@ -7,8 +7,8 @@ import pandas as pd
 import pdb
 pdb.set_trace()
 
-CSV_PATH = '/maps/ys611/ai-refined-rtm/data/BPWW_extract_2018.csv'
-SAVE_PATH = '/maps/ys611/ai-refined-rtm/data/BPWW_extract_2018_reshaped.csv'
+CSV_PATH = '/maps/ys611/ai-refined-rtm/data/real/BPWW_extract_2018.csv'
+SAVE_PATH = '/maps/ys611/ai-refined-rtm/data/real/BPWW_extract_2018_reshaped.csv'
 
 
 def preprocess():
@@ -55,7 +55,7 @@ def preprocess():
                           ['class', 'sample_id', 'date'])
 
     # save the reshaped dataframe
-    df_new.to_csv(SAVE_PATH, index=False)
+    # df_new.to_csv(SAVE_PATH, index=False)
 
 
 if __name__ == '__main__':

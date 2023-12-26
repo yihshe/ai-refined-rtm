@@ -49,8 +49,10 @@ class SyntheticS2(data.Dataset):
         # self.attr_info = ['class', 'sample_id', 'date']
         # self.rtm_paras = ['N', 'cab', 'cw', 'cm',
         #                   'LAI', 'LIDF', 'LAIu', 'sd', 'h', 'cd']
+        # self.rtm_paras = ['N', 'cab', 'cw', 'cm',
+        #                   'LAI', 'LAIu', 'sd', 'h', 'cd']
         self.rtm_paras = ['N', 'cab', 'cw', 'cm',
-                          'LAI', 'LAIu', 'sd', 'h', 'cd']
+                          'LAI', 'LAIu', 'sd', 'h', 'fc']
         # NOTE currently the ground truth of latent variables are not available
 
     def __len__(self):
@@ -65,6 +67,7 @@ class SyntheticS2(data.Dataset):
         if self.transform is not None:
             spectrum = self.transform(spectrum)
         rtm_paras = sample[self.rtm_paras].values.astype('float32')
+        # TODO calculate cd using fc and sd
 
         data_dict = {
             'spectrum': spectrum,

@@ -1,5 +1,5 @@
 {
-    "name": "NNRegressor",
+    "name": "NNRegressor_noised_data",
     "n_gpu": 1,
     "arch": {
         "type": "NNRegressor",
@@ -11,14 +11,14 @@
     "data_loader": {
         "type": "SyntheticS2DataLoader",
         "args": {
-            "data_dir": "/maps/ys611/ai-refined-rtm/data/synthetic/20230611/synthetic_train_scaled.csv",
+            "data_dir": "/maps/ys611/ai-refined-rtm/data/synthetic/20230816/synthetic/synthetic_train_scaled.csv",
             "batch_size": 64,
             "shuffle": true,
             "validation_split": 0.0,
             "num_workers": 2
         },
-        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/synthetic/20230611/synthetic_valid_scaled.csv",
-        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/synthetic/20230611/synthetic_test_scaled.csv"
+        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/synthetic/20230816/synthetic/synthetic_valid_scaled.csv",
+        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/synthetic/20230816/synthetic/synthetic_test_scaled.csv"
     },
     "optimizer": {
         "type": "Adam",
@@ -48,6 +48,6 @@
         "output_key": "rtm_paras",
         "stablize_grad": false,
         "tensorboard": false,
-        "wandb": true
+        "wandb": false
     }
 }

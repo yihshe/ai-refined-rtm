@@ -19,7 +19,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # Test the trained model of NN regressor on synthetic data
 # python3 -m pdb test_NN_analyze.py --config configs/NN_regressor.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507/model_best.pth
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor_all_CA_range_norm/0728_105359/model_best.pth
 
 # Test the trained model of NN Regressor on real test data
 # python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
@@ -39,7 +39,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 
 # Generate synthetic data from RTM
-python3 datasets/sampling/sampling.py
+# python3 -m pdb datasets/sampling/sampling.py
 
 # Split the data into train and test
 # python3 datasets/preprocessing/train_test_split.py
@@ -50,19 +50,27 @@ python3 datasets/sampling/sampling.py
 # Train NN Regressor
 # python3 train.py --config configs/NN_regressor.json 
 
+# python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor_cd/0622_215152/checkpoint-epoch30.pth
+
+# python3 datasets/preprocessing/reshape.py
+
+# Train a simple vanilla autoencoder without RTM
+python3 train.py --config configs/vanilla_AE.json
+
 # Train a simple vanilla autoencoder with RTM
 # python3 train.py --config configs/AE_RTM.json 
 
 # Train a simple vanilla autoencoder with RTM on synthetic data
-# python3 train.py --config configs/AE_RTM_syn.json
-
-# # Train a simple vanilla autoencoder without RTM
-# python3 train.py --config configs/vanilla_AE_scaled.json
+python3 train.py --config configs/AE_RTM_syn.json
 
 # Train an autoencoder with RTM and with bias correction
-# python3 train.py --config configs/AE_RTM_corr.json 
+python3 train.py --config configs/AE_RTM_corr.json 
 
 # Run unittest
 # python3 -m pdb rtm_unittest.py
+
+# Visual analysis of the stabilizer
+# python3 -m pdb visuals/training_logs.py
 
 

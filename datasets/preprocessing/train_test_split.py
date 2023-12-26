@@ -8,12 +8,22 @@ from sklearn.model_selection import train_test_split
 #                               'data/BPWW_extract_2018_reshaped_train.csv')
 # SAVE_DIR_TEST = os.path.join(BASE_DIR,
 #                              'data/BPWW_extract_2018_reshaped_test.csv')
-BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230611/'
-DATA_DIR = os.path.join(BASE_DIR, 'synthetic.csv')
-SAVE_DIR_TRAIN = os.path.join(BASE_DIR, 'synthetic_train_valid.csv')
-SAVE_DIR_TEST = os.path.join(BASE_DIR, 'synthetic_test.csv')
+
+# suffix = "all_CA_range_norm"
+# BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230715/'
+# DATA_DIR = os.path.join(BASE_DIR, f'synthetic_{suffix}.csv')
+# SAVE_DIR = os.path.join(BASE_DIR, suffix)
+
+BASE_DIR = '/maps/ys611/ai-refined-rtm/data/synthetic/20230816/'
+DATA_DIR = os.path.join(BASE_DIR, 'synthetic_rand_noise.csv')
+SAVE_DIR = os.path.join(BASE_DIR, 'synthetic_rand_noise')
+SAVE_DIR_TRAIN = os.path.join(SAVE_DIR, 'synthetic_train_valid.csv')
+SAVE_DIR_TEST = os.path.join(SAVE_DIR, 'synthetic_test.csv')
 
 SPLIT_RATIO = 0.2
+
+if not os.path.exists(SAVE_DIR):
+    os.makedirs(SAVE_DIR)
 
 
 def split():
