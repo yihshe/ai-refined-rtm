@@ -51,24 +51,38 @@ for zone in zones_of_interest:
 # field = 'Biogeographic_zone'
 field = 'Biome'
 zones_of_interest = df[field].unique()
-zones = ['Temperate mixed forests', 'Tropical forests',
-       'Temperate coniferous forests', 'Boreal forests', 'Woodlands and savannas']
-
+zones = ['Temperate mixed forests', 'Temperate coniferous forests']
 # Filter the data by biogeographic zones
 filtered_df = df[df[field].isin(zones)]
+X = 'CD'
+Y = 'H'
+labels = {
+    'CD': 'Crown Diameter (CD)',
+    'H': 'Height (H)',
+}
+
 # Fit your data to the log_func
-params, covariance = curve_fit(nonlin_func, filtered_df['CD'], filtered_df['H'])
+params, covariance = curve_fit(nonlin_func, filtered_df[X], filtered_df[Y])
+
+# Calculate the R-squared value
+residuals = filtered_df[Y] - nonlin_func(filtered_df[X], *params)
+ss_res = np.sum(residuals**2)
+ss_tot = np.sum((filtered_df[Y]-np.mean(filtered_df[Y]))**2)
+r_squared = 1 - (ss_res / ss_tot)
+print(f'R-squared: {r_squared}')
+
 # Generate a sequence of crown diameters for plotting the fit line
-cd_space = np.linspace(min(filtered_df['CD']), max(filtered_df['CD']), 100)
+cd_space = np.linspace(min(filtered_df[X]), max(filtered_df[X]), 100)
 # Plot the original scatter data
 plt.figure(figsize=(10, 6))
 # plt.scatter(filtered_df['CD'], filtered_df['H'], alpha=0.5)
-plt.hexbin(x=filtered_df['CD'], y=filtered_df['H'], gridsize=80, cmap='viridis', bins='log')
+plt.hexbin(x=filtered_df[X], y=filtered_df[Y], gridsize=80, cmap='viridis', bins='log')
 # Plot the logarithmic fit line
 plt.plot(cd_space, nonlin_func(cd_space, *params), color='red', linewidth=2)
-plt.xlabel('Crown Diameter (CD)')
-plt.ylabel('Height (H)')
-plt.title(f'{field} All incl Woodlands and savannas: H = exp({np.round(params[0], 3)}+{np.round(params[1], 3)}*ln(CD))')
-plt.savefig(SAVE_PATH + field +'_'+ 'All_incl_woodlands' + '_H_vs_CD_fit.png')
+plt.xlabel(labels[X])
+plt.ylabel(labels[Y])
+plt.title(f'{field} Temperate Forests: {Y} = exp({np.round(params[0], 3)}+{np.round(params[1], 3)}*ln({X})), R-squared: {np.round(r_squared, 3)}')
+plt.savefig(SAVE_PATH + field +'_'+ 'temperate_forests' + f'_{X}_vs_{Y}_fit.png')
 plt.show()
+
 # %%
