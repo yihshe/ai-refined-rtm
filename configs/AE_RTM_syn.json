@@ -5,45 +5,8 @@
         "type": "AE_RTM",
         "args": {
             "input_dim": 11,
-            "hidden_dim": 9,
-            "rtm_paras": {
-                "N": {
-                    "min": 1.0,
-                    "max": 3.0
-                },
-                "cab": {
-                    "min": 10.0,
-                    "max": 80.0
-                },
-                "cw": {
-                    "min": 0.001,
-                    "max": 0.02
-                },
-                "cm": {
-                    "min": 0.005,
-                    "max": 0.05
-                },
-                "LAI": {
-                    "min": 0.01,
-                    "max": 5.0
-                },
-                "LAIu": {
-                    "min": 0.01,
-                    "max": 1.0
-                },
-                "sd": {
-                    "min": 100,
-                    "max": 5000
-                },
-                "h": {
-                    "min": 1.0,
-                    "max": 15.0
-                },
-                "fc": {
-                    "min": 0.1,
-                    "max": 1.0
-                }
-            },
+            "hidden_dim": 8,
+            "rtm_paras": "/maps/ys611/ai-refined-rtm/configs/rtm_paras.json",
             "standardization": {
                 "x_mean": "/maps/ys611/ai-refined-rtm/data/synthetic/20230816/synthetic_rand_noise/train_x_mean.npy",
                 "x_scale": "/maps/ys611/ai-refined-rtm/data/synthetic/20230816/synthetic_rand_noise/train_x_scale.npy"

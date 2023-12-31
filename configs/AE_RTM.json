@@ -5,7 +5,7 @@
         "type": "AE_RTM",
         "args": {
             "input_dim": 11,
-            "hidden_dim": 9,
+            "hidden_dim": 8,
             "rtm_paras": "/maps/ys611/ai-refined-rtm/configs/rtm_paras.json",
             "standardization": {
                 "x_mean": "/maps/ys611/ai-refined-rtm/data/real/train_x_mean.npy",
