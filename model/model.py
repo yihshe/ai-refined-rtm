@@ -63,8 +63,6 @@ class AE_RTM(BaseModel):
 
     def __init__(self, input_dim, hidden_dim, rtm_paras, standardization):
         super().__init__()
-        assert hidden_dim == len(
-            rtm_paras), "hidden_dim must be equal to the number of RTM parameters"
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         # The encoder is learnable neural networks
@@ -84,6 +82,8 @@ class AE_RTM(BaseModel):
         # ["N", "cab", "cw", "cm", "LAI", "LAIu", "sd", "h", "fc"]
         # then, cd will be calculated from sd and fc
         self.rtm_paras = json.load(open(rtm_paras))
+        assert hidden_dim == len(
+            self.rtm_paras), "hidden_dim must be equal to the number of RTM parameters"
         S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
                          'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
                          'B8A_NIR2', 'B09_WV', 'B10', 'B11_SWI1',

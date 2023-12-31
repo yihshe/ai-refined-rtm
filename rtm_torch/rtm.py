@@ -92,7 +92,7 @@ class RTM():
     def rtm_init(self, sensor="Sentinel2_Full", lop="prospectD",
                  canopy_arch="inform"):
         # create new Instance of the RTM
-        # NOTE manually set the int_boost to 10000.0. The default value is 1.0
+        # TODO scale the real dataset by 10000.0, and use the default value of int_boost 1.0
         return mod.InitModel(lop=lop, canopy_arch=canopy_arch, nodat=-999,
                              int_boost=1.0, s2s=sensor)
 

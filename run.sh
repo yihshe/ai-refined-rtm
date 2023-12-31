@@ -26,11 +26,11 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507/model_best.pth
 
 # Test the trained model of AE_RTM_syn on synthetic data
-python3 test_AE_syn_analyze.py --config configs/AE_RTM_syn.json \
-        --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn_noised_data/0913_075425/model_best.pth
+# python3 test_AE_syn_analyze.py --config configs/AE_RTM_syn.json \
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn_noised_data/0913_075425/model_best.pth
 
-python3 test_AE_syn_analyze.py --config configs/AE_RTM_corr.json \
-        --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr_syn_noised_data/0913_112305/model_best.pth
+# python3 test_AE_syn_analyze.py --config configs/AE_RTM_corr.json \
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr_syn_noised_data/0913_112305/model_best.pth
 
 # Test the trained model of AE_RTM_syn on real test data
 # python3 -m pdb test_AE_syn_analyze.py --config configs/AE_RTM_syn_infer.json \
@@ -62,7 +62,7 @@ python3 test_AE_syn_analyze.py --config configs/AE_RTM_corr.json \
 # python3 train.py --config configs/vanilla_AE.json
 
 # Train a simple vanilla autoencoder with RTM
-# python3 train.py --config configs/AE_RTM.json 
+python3 -m pdb train.py --config configs/AE_RTM.json 
 
 # Train a simple vanilla autoencoder with RTM on synthetic data
 # python3 train.py --config configs/AE_RTM_syn.json
