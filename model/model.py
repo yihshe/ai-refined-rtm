@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import json
 from base import BaseModel
 from rtm_torch.rtm import RTM
 
@@ -82,7 +83,7 @@ class AE_RTM(BaseModel):
         # NOTE output of rtm_paras from the encoder:
         # ["N", "cab", "cw", "cm", "LAI", "LAIu", "sd", "h", "fc"]
         # then, cd will be calculated from sd and fc
-        self.rtm_paras = rtm_paras
+        self.rtm_paras = json.load(open(rtm_paras))
         S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
                          'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
                          'B8A_NIR2', 'B09_WV', 'B10', 'B11_SWI1',
@@ -112,6 +113,8 @@ class AE_RTM(BaseModel):
         # calculate cd from sd and fc
         para_dict['cd'] = torch.sqrt(
             (para_dict['fc']*10000)/(torch.pi*para_dict["sd"]))*2
+        para_dict['h'] = torch.exp(
+            2.117 + 0.507*torch.log(para_dict['cd']))
 
         output = self.decoder.run(**para_dict)[:, self.bands_index]
         return (output-self.x_mean)/self.x_scale
