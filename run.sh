@@ -62,13 +62,13 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 train.py --config configs/vanilla_AE.json
 
 # Train a simple vanilla autoencoder with RTM
-python3 -m pdb train.py --config configs/AE_RTM.json 
+python3 train.py --config configs/AE_RTM.json 
 
 # Train a simple vanilla autoencoder with RTM on synthetic data
 # python3 train.py --config configs/AE_RTM_syn.json
 
 # Train an autoencoder with RTM and with bias correction
-# python3 train.py --config configs/AE_RTM_corr.json 
+python3 train.py --config configs/AE_RTM_corr.json 
 
 # Run unittest
 # python3 -m pdb rtm_unittest.py

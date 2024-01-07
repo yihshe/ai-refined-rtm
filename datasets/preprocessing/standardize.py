@@ -11,7 +11,7 @@ CSV_PATH2 = "/maps/ys611/ai-refined-rtm/data/real/BPWW_extract_2018_reshaped_tes
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
             'B12_SWI2']
-SAVE_PATH = '/maps/ys611/ai-refined-rtm/data/real/v2'
+SAVE_PATH = '/maps/ys611/ai-refined-rtm/data/real/'
 ATTRS = ['class', 'sample_id', 'date']
 
 if not os.path.exists(SAVE_PATH):
@@ -46,11 +46,13 @@ valid_idx = idx_full[0:len_valid]
 train_idx = np.delete(idx_full, np.arange(0, len_valid))
 
 
-def standardize(df, df2, columns):
+def standardize(df, df2, columns, data_type='real'):
+    # Range of the reflectance should be 0 to 1
+    factor = 10000.0 if data_type == 'real' else 1.0
     # TODO: for real data, first scale the data by the factor of 10000
-    df_valid = df[columns].iloc[valid_idx]/10000.0
-    df_train = df[columns].iloc[train_idx]/10000.0
-    df_test = df2[columns]/10000.0
+    df_valid = df[columns].iloc[valid_idx]/factor
+    df_train = df[columns].iloc[train_idx]/factor
+    df_test = df2[columns]/factor
 
     scaler = preprocessing.StandardScaler().fit(df_train)
     df_train_scaled = scaler.transform(df_train)
@@ -78,7 +80,7 @@ def normalize(df, df2, columns):
 
 # standardize spectrums for both real and synthetic datasets
 scaler, df_train_scaled, df_valid_scaled, df_test_scaled = standardize(
-    df, df2, S2_BANDS)
+    df, df2, S2_BANDS, data_type='real')
 # normalize rtm parameters for only synthetic datasets
 df_train_scaled2, df_valid_scaled2, df_test_scaled2 = normalize(
     df, df2, ATTRS)
