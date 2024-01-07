@@ -53,6 +53,6 @@
         "output_key": "spectrum",
         "stablize_grad": true,
         "tensorboard": false,
-        "wandb": true
+        "wandb": false
     }
 }
