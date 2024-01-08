@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import json
 # %%
 # plot the histogram of the training data
 # CSV_PATH = '/maps/ys611/ai-refined-rtm/data/synthetic/20230611/synthetic_train_scaled.csv'
@@ -153,17 +154,18 @@ plt.show()
 # %%
 BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/'
 CSV_PATH1 = os.path.join(
-    BASE_PATH, 'AE_RTM/0612_175828_/model_best_testset_analyzer.csv')
+    BASE_PATH, 'AE_RTM/0107_170758/model_best_testset_analyzer.csv')
 # CSV_PATH2 = os.path.join(
 #     BASE_PATH, 'AE_RTM_syn/0614_112532/model_best_testset_analyzer_real.csv')
 CSV_PATH2 = os.path.join(
-    BASE_PATH, 'AE_RTM_corr/0615_171950/model_best_testset_analyzer.csv')
-SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0615_171950/histograms')
+    BASE_PATH, 'AE_RTM_corr/0107_191100/model_best_testset_analyzer.csv')
+SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0107_191100/histograms')
 
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
             'B12_SWI2']
-ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'cd']
+rtm_paras = json.load(open('/maps/ys611/ai-refined-rtm/configs/rtm_paras.json'))
+ATTRS = list(rtm_paras.keys())
 
 NUM_BINS = 100
 # mkdir if the save path does not exist
@@ -173,45 +175,8 @@ if not os.path.exists(SAVE_PATH):
 df1 = pd.read_csv(CSV_PATH1)
 df2 = pd.read_csv(CSV_PATH2)
 # tranform the variables back to their original scale
-rtm_paras = {
-                "N": {
-                    "min": 1.0,
-                    "max": 4.0
-                },
-                "cab": {
-                    "min": 0.0,
-                    "max": 100.0
-                },
-                "cw": {
-                    "min": 0.0002,
-                    "max": 0.08
-                },
-                "cm": {
-                    "min": 0.0,
-                    "max": 0.05
-                },
-                "LAI": {
-                    "min": 0.01,
-                    "max": 15.0
-                },
-                "LAIu": {
-                    "min": 0.01,
-                    "max": 3.0
-                },
-                "sd": {
-                    "min": 0.0,
-                    "max": 3000.0
-                },
-                "h": {
-                    "min": 1.0,
-                    "max": 50.0
-                },
-                "cd": {
-                    "min": 1.0,
-                    "max": 15.0
-                }
-            }
 
+# TODO integrate this part into the model inference
 for attr in ATTRS:
     df1[f'latent_{attr}'] = df1[f'latent_{attr}'] * \
         (rtm_paras[attr]['max'] - rtm_paras[attr]['min']) + \
@@ -221,6 +186,7 @@ for attr in ATTRS:
         rtm_paras[attr]['min']
 
 # %%
+NUM_BINS = 100
 # create one figure and plot both variable predictions of different models as a subplot
 fig, axs = plt.subplots(3, 3, figsize=(20, 15))
 for i, attr in enumerate(ATTRS):
@@ -241,14 +207,16 @@ for i, attr in enumerate(ATTRS):
         label='AE_RTM_corr',
         alpha=0.6,
     )
+    # change the fontsize of the x and y ticks
+    axs[i//3, i % 3].tick_params(axis='both', which='major', labelsize=16)
     axs[i//3, i % 3].set_xlabel(attr)
     axs[i//3, i % 3].set_ylabel('Frequency')
     # adjust the font size of the x and y labels
-    axs[i//3, i % 3].xaxis.label.set_size(16)
-    axs[i//3, i % 3].yaxis.label.set_size(16)
+    axs[i//3, i % 3].xaxis.label.set_size(18)
+    axs[i//3, i % 3].yaxis.label.set_size(18)
     axs[i//3, i % 3].legend()
     # adjust the font size of the legend
-    axs[i//3, i % 3].legend(prop={'size': 16})
+    axs[i//3, i % 3].legend(prop={'size': 18})
 plt.tight_layout()
 # plt.savefig(os.path.join(
 #     SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_syn.png'), dpi=300)
