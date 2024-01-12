@@ -165,7 +165,7 @@ S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
             'B12_SWI2']
 rtm_paras = json.load(open('/maps/ys611/ai-refined-rtm/configs/rtm_paras.json'))
-ATTRS = list(rtm_paras.keys())
+ATTRS = list(rtm_paras.keys()) + ['cd', 'h']
 
 NUM_BINS = 100
 # mkdir if the save path does not exist
@@ -177,23 +177,23 @@ df2 = pd.read_csv(CSV_PATH2)
 # tranform the variables back to their original scale
 
 # TODO integrate this part into the model inference
-for attr in ATTRS:
-    df1[f'latent_{attr}'] = df1[f'latent_{attr}'] * \
-        (rtm_paras[attr]['max'] - rtm_paras[attr]['min']) + \
-        rtm_paras[attr]['min']
-    df2[f'latent_{attr}'] = df2[f'latent_{attr}'] * \
-        (rtm_paras[attr]['max'] - rtm_paras[attr]['min']) + \
-        rtm_paras[attr]['min']
+# for attr in ATTRS:
+#     df1[f'latent_{attr}'] = df1[f'latent_{attr}'] * \
+#         (rtm_paras[attr]['max'] - rtm_paras[attr]['min']) + \
+#         rtm_paras[attr]['min']
+#     df2[f'latent_{attr}'] = df2[f'latent_{attr}'] * \
+#         (rtm_paras[attr]['max'] - rtm_paras[attr]['min']) + \
+#         rtm_paras[attr]['min']
 
 # %%
 NUM_BINS = 100
 # create one figure and plot both variable predictions of different models as a subplot
-fig, axs = plt.subplots(3, 3, figsize=(20, 15))
+fig, axs = plt.subplots(3, 4, figsize=(25, 15))
 for i, attr in enumerate(ATTRS):
     sns.histplot(
         df1[f'latent_{attr}'].values,
         bins=NUM_BINS,
-        ax=axs[i//3, i % 3],
+        ax=axs[i//4, i % 4],
         color='red',
         label='AE_RTM',
         alpha=0.5,
@@ -201,27 +201,27 @@ for i, attr in enumerate(ATTRS):
     sns.histplot(
         df2[f'latent_{attr}'].values,
         bins=NUM_BINS,
-        ax=axs[i//3, i % 3],
+        ax=axs[i//4, i % 4],
         color='blue',
         # label='AE_RTM_syn',
         label='AE_RTM_corr',
         alpha=0.6,
     )
     # change the fontsize of the x and y ticks
-    axs[i//3, i % 3].tick_params(axis='both', which='major', labelsize=16)
-    axs[i//3, i % 3].set_xlabel(attr)
-    axs[i//3, i % 3].set_ylabel('Frequency')
+    axs[i//4, i % 4].tick_params(axis='both', which='major', labelsize=16)
+    axs[i//4, i % 4].set_xlabel(attr)
+    axs[i//4, i % 4].set_ylabel('Frequency')
     # adjust the font size of the x and y labels
-    axs[i//3, i % 3].xaxis.label.set_size(18)
-    axs[i//3, i % 3].yaxis.label.set_size(18)
-    axs[i//3, i % 3].legend()
+    axs[i//4, i % 4].xaxis.label.set_size(18)
+    axs[i//4, i % 4].yaxis.label.set_size(18)
+    axs[i//4, i % 4].legend()
     # adjust the font size of the legend
-    axs[i//3, i % 3].legend(prop={'size': 18})
+    axs[i//4, i % 4].legend(prop={'size': 18})
 plt.tight_layout()
 # plt.savefig(os.path.join(
 #     SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_syn.png'), dpi=300)
 plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_orig_scale.png'), dpi=300)
+    SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_orig_scale_all.png'), dpi=300)
 plt.show()
 
 # %%
