@@ -6,8 +6,8 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 -m pdb train.py --config configs/vanilla_AE_scaled.json
 
 # Test the trained model
-# python3 -m pdb test.py --config configs/vanilla_AE_scaled.json \
-#         --resume saved/models/VanillaAE_scaled/0510_211403/model_best.pth
+# python3 -m pdb test.py --config configs/vanilla_AE.json \
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/VanillaAE/0107_165909/model_best.pth
 
 # Test the trained model of AE with RTM
 # python3 -m pdb test_AE_analyze.py --config configs/AE_RTM.json \
@@ -37,9 +37,8 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532/model_best.pth
 
 # Test the trained model of AE_RTM_corr on real test data
-python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
-        --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0107_191100/model_best.pth
-
+# python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0107_191100/model_best.pth
 
 # Generate synthetic data from RTM
 # python3 -m pdb datasets/sampling/sampling.py

@@ -54,7 +54,7 @@ def main(config):
     S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
                 'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
                 'B12_SWI2']
-    ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'fc']
+    ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'fc', 'cd', 'h']
 
     analyzer = {}
 
@@ -66,14 +66,11 @@ def main(config):
             data = data_dict[data_key].to(device)
             target = data_dict[target_key].to(device)
             output = model(data)
-
-            #
-            # save sample images, or do something with output here
-            #
-
-            # concatenate the loss per band to the loss_analyzer
-            # calculate the squared loss of each element in the batch
+            # calculate the squared loss of each element in the batch 
             latent = model.encode(data)
+            assert ATTRS == list(latent.keys()), "latent keys do not match"
+            # latent is a dictionary of parameters, convert it to a tensor
+            latent = torch.stack([latent[k] for k in latent.keys()], dim=1)
             l2_per_band = torch.square(output-target)
             data_concat(analyzer, 'output', output)
             data_concat(analyzer, 'target', target)
@@ -82,26 +79,6 @@ def main(config):
             data_concat(analyzer, 'sample_id', data_dict['sample_id'])
             data_concat(analyzer, 'class', data_dict['class'])
             data_concat(analyzer, 'date', data_dict['date'])
-
-            # if batch_idx == 0:
-            #     analyzer['output'] = output
-            #     analyzer['target'] = target
-            #     analyzer['latent'] = latent
-            #     analyzer['loss_per_band'] = l2_per_band
-            #     analyzer['sample_id'] = data_dict['sample_id']
-            #     analyzer['class'] = data_dict['class']
-            #     analyzer['date'] = data_dict['date']
-            # else:
-            #     analyzer['loss_per_band'] = torch.cat((
-            #         analyzer['loss_per_band'], l2_per_band
-            #     ), dim=0)
-            #     analyzer['sample_id'] = torch.cat((
-            #         analyzer['sample_id'], data_dict['sample_id']
-            #     ), dim=0)
-            #     analyzer['class'] = analyzer['class'] + \
-            #         data_dict['class']
-            #     analyzer['date'] = analyzer['date'] + \
-            #         data_dict['date']
 
             # computing loss, metrics on test set
             loss = loss_fn(output, target)
