@@ -5,7 +5,7 @@
         "type": "VanillaAE",
         "args": {
             "input_dim": 11,
-            "hidden_dim": 8
+            "hidden_dim": 7
         }
     },
     "data_loader": {

@@ -108,8 +108,9 @@ class AE_RTM(BaseModel):
             para_dict[para_name] = x[:, i]*(max-min)+min
         assert 'fc' in para_dict.keys(), "fc must be included in the rtm_paras"
         # calculate cd from sd and fc
+        SD = 500 
         para_dict['cd'] = torch.sqrt(
-            (para_dict['fc']*10000)/(torch.pi*para_dict["sd"]))*2
+            (para_dict['fc']*10000)/(torch.pi*SD))*2
         para_dict['h'] = torch.exp(
             2.117 + 0.507*torch.log(para_dict['cd']))
         return para_dict
