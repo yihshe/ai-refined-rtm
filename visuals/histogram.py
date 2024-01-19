@@ -154,12 +154,12 @@ plt.show()
 # %%
 BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/'
 CSV_PATH1 = os.path.join(
-    BASE_PATH, 'AE_RTM/0107_170758/model_best_testset_analyzer.csv')
+    BASE_PATH, 'AE_RTM/0115_105753/model_best_testset_analyzer.csv')
 # CSV_PATH2 = os.path.join(
 #     BASE_PATH, 'AE_RTM_syn/0614_112532/model_best_testset_analyzer_real.csv')
 CSV_PATH2 = os.path.join(
-    BASE_PATH, 'AE_RTM_corr/0107_191100/model_best_testset_analyzer.csv')
-SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0107_191100/histograms')
+    BASE_PATH, 'AE_RTM_corr/0115_135353/model_best_testset_analyzer.csv')
+SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0115_135353/histograms')
 
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
@@ -188,12 +188,12 @@ df2 = pd.read_csv(CSV_PATH2)
 # %%
 NUM_BINS = 100
 # create one figure and plot both variable predictions of different models as a subplot
-fig, axs = plt.subplots(3, 4, figsize=(25, 15))
+fig, axs = plt.subplots(3, 3, figsize=(20, 15))
 for i, attr in enumerate(ATTRS):
     sns.histplot(
         df1[f'latent_{attr}'].values,
         bins=NUM_BINS,
-        ax=axs[i//4, i % 4],
+        ax=axs[i//3, i % 3],
         color='red',
         label='AE_RTM',
         alpha=0.5,
@@ -201,27 +201,27 @@ for i, attr in enumerate(ATTRS):
     sns.histplot(
         df2[f'latent_{attr}'].values,
         bins=NUM_BINS,
-        ax=axs[i//4, i % 4],
+        ax=axs[i//3, i % 3],
         color='blue',
         # label='AE_RTM_syn',
         label='AE_RTM_corr',
         alpha=0.6,
     )
     # change the fontsize of the x and y ticks
-    axs[i//4, i % 4].tick_params(axis='both', which='major', labelsize=16)
-    axs[i//4, i % 4].set_xlabel(attr)
-    axs[i//4, i % 4].set_ylabel('Frequency')
+    axs[i//3, i % 3].tick_params(axis='both', which='major', labelsize=16)
+    axs[i//3, i % 3].set_xlabel(attr)
+    axs[i//3, i % 3].set_ylabel('Frequency')
     # adjust the font size of the x and y labels
-    axs[i//4, i % 4].xaxis.label.set_size(18)
-    axs[i//4, i % 4].yaxis.label.set_size(18)
-    axs[i//4, i % 4].legend()
+    axs[i//3, i % 3].xaxis.label.set_size(18)
+    axs[i//3, i % 3].yaxis.label.set_size(18)
+    axs[i//3, i % 3].legend()
     # adjust the font size of the legend
-    axs[i//4, i % 4].legend(prop={'size': 18})
+    axs[i//3, i % 3].legend(prop={'size': 18})
 plt.tight_layout()
 # plt.savefig(os.path.join(
 #     SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_syn.png'), dpi=300)
-plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_orig_scale_all.png'), dpi=300)
+# plt.savefig(os.path.join(
+#     SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_orig_scale_all.png'), dpi=300)
 plt.show()
 
 # %%
