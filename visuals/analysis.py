@@ -38,6 +38,12 @@ coniferous = ['Pseudotsuga menziesii', 'Picea abies', 'Pinus nigra',
               'Larix decidua', 'Pinus sylvestris']
 deciduous = ['Prunus spp', 'Fagus sylvatica', 'Carpinus betulus', 'Quercus spp', 
              'Acer pseudoplatanus', 'Fraxinus excelsior', 'Alnus glutinosa']
+df_coniferous = df2[df2['class'].isin(coniferous)]
+df_deciduous = df2[df2['class'].isin(deciduous)]
+dates = ['2018.04.08', '2018.04.21', '2018.05.06', '2018.07.02', '2018.08.09', 
+         '2018.08.21', '2018.08.29', '2018.09.13', '2018.09.18', '2018.09.28', 
+         '2018.09.30', '2018.10.05', '2018.10.10', '2018.10.30']
+
 
 # %%
 """
@@ -73,32 +79,36 @@ for i, attr in enumerate(ATTRS):
     ax.set_ylabel('Frequency', fontsize=fontsize)
     ax.legend(fontsize=fontsize)
 plt.tight_layout()
-# plt.savefig(os.path.join(
-#     SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_orig_scale_all.png'), dpi=300)
+plt.savefig(os.path.join(
+    SAVE_PATH, 'histogram_realset_vars_AE_RTM_v_corr.png'), dpi=300)
 plt.show()
 
 # %%
 """
 Histogram of the latent variables between Coniferous and Deciduous for AE_RTM_corr
 """
-dfs = {
-    'Coniferous': df2[df2['class'].isin(coniferous)],
-    'Deciduous': df2[df2['class'].isin(deciduous)],
-}
-
 # TODO finish this code
 # Histogram of the latent variables of selected species
-NUM_BINS = 50
+NUM_BINS = 100
 # create one figure and plot both variable predictions of different models as a subplot
 fig, axs = plt.subplots(3, 3, figsize=(20, 15))
 for i, attr in enumerate(ATTRS):
     ax=axs[i//3, i % 3]
     sns.histplot(
-        df_filtered[f'latent_{attr}'].values,
+        df_coniferous[f'latent_{attr}'].values,
+        bins=NUM_BINS,
+        ax=ax,
+        color='red',
+        label='Coniferous',
+        alpha=0.6,
+    )
+    sns.histplot(
+        df_deciduous[f'latent_{attr}'].values,
         bins=NUM_BINS,
         ax=ax,
         color='blue',
-        label='AE_RTM_corr',
+        # label='AE_RTM_syn',
+        label='Deciduous',
         alpha=0.6,
     )
     # change the fontsize of the x and y ticks
@@ -106,10 +116,10 @@ for i, attr in enumerate(ATTRS):
     fontsize = 18
     ax.set_xlabel(attr, fontsize=fontsize)
     ax.set_ylabel('Frequency', fontsize=fontsize)
-    # ax.legend(fontsize=fontsize)
+    ax.legend(fontsize=fontsize)
 plt.tight_layout()
-# plt.savefig(os.path.join(
-#     SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_orig_scale_all.png'), dpi=300)
+plt.savefig(os.path.join(
+    SAVE_PATH, 'histogram_realset_vars_corr_coniferous_v_deciduous.png'), dpi=300)
 plt.show()
     
 # %%
@@ -140,12 +150,89 @@ for species in coniferous+deciduous:
         ax.set_xlabel(attr, fontsize=fontsize)
         ax.set_ylabel('Frequency', fontsize=fontsize)
         # ax.legend(fontsize=fontsize)
+    # Set the title of the figure
+    forest_type = 'Coniferous' if species in coniferous else 'Deciduous'
+    plt.suptitle(f"{forest_type}: {species}", fontsize=22)
+    # Set the distance between the title and the plot
+    plt.subplots_adjust(top=1.05)
     plt.tight_layout()
-    # plt.savefig(os.path.join(
-    #     SAVE_PATH, 'histogram_real_testset_rtm_vars_v_AE_RTM_orig_scale_all.png'), dpi=300)
+    plt.savefig(os.path.join(
+        SAVE_PATH, f'histogram_realset_vars_corr_{species}.png'), dpi=300)
     plt.show()
-    
 
+# %%
+"""
+Scatter plot for selected variables for AE_RTM_corr
+"""    
+# subplots for fc v. cd, fc v. h
+fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+var_pairs = [['fc', 'cd'], ['fc', 'h']]
+for i, var_pair in enumerate(var_pairs):
+    ax = axs[i]
+    sns.scatterplot(x=f'latent_{var_pair[0]}', y=f'latent_{var_pair[1]}',
+                    data=df2, ax=ax, s=8, alpha=0.5)
+    fontsize = 18
+    # set the distance between the title and the plot
+    # ax.set_title(f'{var_pair[0]} v. {var_pair[1]}', fontsize=fontsize, pad=10)
+    ax.set_xlabel(var_pair[0], fontsize=fontsize)
+    ax.set_ylabel(var_pair[1], fontsize=fontsize)
+    # set the same ticks for both x and y axes
+    ax.tick_params(axis='both', which='major', labelsize=16)
+
+plt.tight_layout()
+plt.savefig(os.path.join(SAVE_PATH, 'scatter_realset_vars_corr_fc_v_cd_h.png'))
+
+# %%
+"""
+Scatter plot for variable pairs for AE_RTM_corr
+"""
+fig, axs = plt.subplots(7, 7, figsize=(25, 25))
+# drop the last two elements in ATTRS (cd and h)
+ATTRS2 = ATTRS[:-2]
+for i, attr1 in enumerate(ATTRS2):
+    for j, attr2 in enumerate(ATTRS2):
+        ax = axs[i, j]
+        sns.scatterplot(x=f'latent_{attr1}', y=f'latent_{attr2}',
+                        data=df1, ax=ax, s=8, alpha=0.5)
+        fontsize = 22
+        # set the distance between the title and the plot
+        # ax.set_title(f'{attr1} v. {attr2}', fontsize=fontsize, pad=10)
+        ax.set_xlabel(attr1, fontsize=fontsize)
+        ax.set_ylabel(attr2, fontsize=fontsize)
+        # set the same ticks for both x and y axes
+        ax.tick_params(axis='both', which='major', labelsize=16)
+
+plt.tight_layout()
+plt.savefig(os.path.join(SAVE_PATH, 'scatter_realset_vars_pairs_corr.png'))
+
+# %%
+"""
+Scatter plot for variable pairs distinguishing Coniferous and Diceduous for AE_RTM_corr
+"""
+fig, axs = plt.subplots(7, 7, figsize=(25, 25))
+# drop the last two elements in ATTRS (cd and h)
+ATTRS2 = ATTRS[:-2]
+df_coniferous = df2[df2['class'].isin(coniferous)]
+df_deciduous = df2[df2['class'].isin(deciduous)]
+for i, attr1 in enumerate(ATTRS2):
+    for j, attr2 in enumerate(ATTRS2):
+        ax = axs[i, j]
+        sns.scatterplot(x=f'latent_{attr1}', y=f'latent_{attr2}',
+                        data=df_coniferous, ax=ax, s=8, alpha=0.5, color='red')
+        sns.scatterplot(x=f'latent_{attr1}', y=f'latent_{attr2}',
+                        data=df_deciduous, ax=ax, s=8, alpha=0.5, color='blue')
+        fontsize = 22
+        # set the distance between the title and the plot
+        # ax.set_title(f'{attr1} v. {attr2}', fontsize=fontsize, pad=10)
+        ax.set_xlabel(attr1, fontsize=fontsize)
+        ax.set_ylabel(attr2, fontsize=fontsize)
+        # set the same ticks for both x and y axes
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        # ax.legend(fontsize=15)
+plt.tight_layout()
+plt.savefig(os.path.join(
+    SAVE_PATH, 'scatter_realset_vars_pairs_corr_coniferous_v_deciduous.png'))
+    
 # %%
 """
 Scatter plot of input and reconstruction bands
@@ -175,6 +262,42 @@ for i, band in enumerate(S2_BANDS):
 # make the last subplot empty
 # axs[2, 3].axis('off')
 plt.tight_layout()
-# plt.savefig(os.path.join(SAVE_PATH, 'linescatter_bands.png'))
+plt.savefig(os.path.join(SAVE_PATH, 'linescatter_realset_bands_corr_target_v_output.png'))
 plt.show()
 
+# %%
+"""
+For each variable, cluster the sample according to forest type and then
+according to the date of acquisition. Get the mean and std of the clustered
+samples and then plot the time series of the mean and show the std as error bars.
+"""
+fig, axs = plt.subplots(3, 3, figsize=(22, 15))
+for i, attr in enumerate(ATTRS):
+    ax = axs[i//3, i % 3]
+    # get the time seris of mean and std of the clustered samples for each variable
+    mean_coniferous = []
+    std_coniferous = []
+    mean_deciduous = []
+    std_deciduous = []
+    for date in dates:
+        df_filtered = df2[df2['date']==date]
+        mean_coniferous.append(df_filtered[df_filtered['class'].isin(coniferous)][f'latent_{attr}'].mean())
+        std_coniferous.append(df_filtered[df_filtered['class'].isin(coniferous)][f'latent_{attr}'].std())
+        mean_deciduous.append(df_filtered[df_filtered['class'].isin(deciduous)][f'latent_{attr}'].mean())
+        std_deciduous.append(df_filtered[df_filtered['class'].isin(deciduous)][f'latent_{attr}'].std())
+    
+    # plot the time series of the mean and show the std as error bars
+    # Plot only the month and day of the date (original format 'yyyy.mm.dd', to this formar like dd/mm)
+    dates_plot = [date.split('.')[2]+'/'+date.split('.')[1] for date in dates]
+    ax.errorbar(x=dates_plot, y=mean_coniferous, yerr=std_coniferous, fmt='o', color = 'red', label='Coniferous')
+    ax.errorbar(x=dates_plot, y=mean_deciduous, yerr=std_deciduous, fmt='o', color = 'blue', label='Deciduous')
+    fontsize = 18
+    ax.set_xlabel('Date', fontsize=fontsize)
+    ax.set_ylabel(attr, fontsize=fontsize)
+    ax.legend(fontsize=16)
+    ax.tick_params(axis='both', which='major', labelsize=10)
+plt.tight_layout()
+plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_vars_corr_coniferous_v_deciduous.png'))
+plt.show()
+
+# %%
