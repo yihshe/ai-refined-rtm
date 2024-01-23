@@ -37,8 +37,8 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532/model_best.pth
 
 # Test the trained model of AE_RTM_corr on real test data
-python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
-        --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0115_135353/model_best.pth
+# python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0115_135353/model_best.pth
 
 # Generate synthetic data from RTM
 # python3 -m pdb datasets/sampling/sampling.py
@@ -75,4 +75,5 @@ python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
 # Visual analysis of the stabilizer
 # python3 -m pdb visuals/training_logs.py
 
+python3 -m pdb datasets/preprocessing/pipeline.py
 
