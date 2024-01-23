@@ -58,13 +58,13 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 datasets/preprocessing/reshape.py
 
 # Train a simple vanilla autoencoder without RTM
-# python3 train.py --config configs/vanilla_AE.json
+python3 train.py --config configs/vanilla_AE.json
 
 # Train a simple vanilla autoencoder with RTM
-# python3 train.py --config configs/AE_RTM.json 
+python3 train.py --config configs/AE_RTM.json 
 
 # Train an autoencoder with RTM and with bias correction
-# python3 train.py --config configs/AE_RTM_corr.json 
+python3 train.py --config configs/AE_RTM_corr.json 
 
 # Train a simple vanilla autoencoder with RTM on synthetic data
 # python3 train.py --config configs/AE_RTM_syn.json
@@ -74,6 +74,4 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # Visual analysis of the stabilizer
 # python3 -m pdb visuals/training_logs.py
-
-python3 -m pdb datasets/preprocessing/pipeline.py
 

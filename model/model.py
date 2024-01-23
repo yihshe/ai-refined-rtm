@@ -118,17 +118,6 @@ class AE_RTM(BaseModel):
 
     #  define decode function to further process the output of decoder
     def decode(self, para_dict):
-        # para_dict = {}
-        # for i, para_name in enumerate(self.rtm_paras.keys()):
-        #     min = self.rtm_paras[para_name]['min']
-        #     max = self.rtm_paras[para_name]['max']
-        #     para_dict[para_name] = x[:, i]*(max-min)+min
-        # assert 'fc' in para_dict.keys(), "fc must be included in the rtm_paras"
-        # # calculate cd from sd and fc
-        # para_dict['cd'] = torch.sqrt(
-        #     (para_dict['fc']*10000)/(torch.pi*para_dict["sd"]))*2
-        # para_dict['h'] = torch.exp(
-        #     2.117 + 0.507*torch.log(para_dict['cd']))
         output = self.decoder.run(**para_dict)[:, self.bands_index]
         return (output-self.x_mean)/self.x_scale
 
