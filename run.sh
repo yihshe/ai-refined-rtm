@@ -41,7 +41,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0115_135353/model_best.pth
 
 # Generate synthetic data from RTM
-python3 -m pdb datasets/sampling/sampling.py
+# python3 -m pdb datasets/sampling/sampling.py
 
 # Split the data into train and test
 # python3 datasets/preprocessing/train_test_split.py
@@ -50,7 +50,7 @@ python3 -m pdb datasets/sampling/sampling.py
 # python3 datasets/preprocessing/standardize.py
 
 # Train NN Regressor
-# python3 train.py --config configs/NN_regressor.json 
+python3 train.py --config configs/NN_regressor.json 
 
 # python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor_cd/0622_215152/checkpoint-epoch30.pth

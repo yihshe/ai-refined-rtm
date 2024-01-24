@@ -4,6 +4,7 @@ temp.py
 .nfs0000000002567ba50001fa7c
 visuals/histogram_temp.py
 visuals/3dplots/
+visuals/allometry/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
