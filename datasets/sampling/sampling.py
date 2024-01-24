@@ -31,11 +31,9 @@ def para_sampling(num_samples=100):
     
     return para_dict
 
-def run_sampling(sampling_np=False):
+def run_sampling():
     # sample the dataset and save it to a csv file
     rtm = RTM()
-    if sampling_np:
-        rtm_np = RTM_np()
     for i in range(180):
         para_dict = para_sampling(num_samples=100)
         with torch.no_grad():
@@ -46,15 +44,6 @@ def run_sampling(sampling_np=False):
         # save only the parameters in their original scales
         paras = para_dict if i == 0 else {k: torch.cat(
             (paras[k], para_dict[k]), dim=0) for k in para_dict.keys()}
-    
-        if sampling_np:
-            # run the RTM_np
-            para_dict_np = {k: v.cpu().numpy() for k, v in para_dict.items()}
-            rtm_np.para_reset(**para_dict_np)
-            rtm_np.mod_exec(mode="batch")
-            spectrums_np = rtm_np.myResult if i == 0 else np.concatenate(
-                (spectrums_np, rtm_np.myResult), axis=0)
-
         print(f"Finished {i+1}00 samples")
 
     # mkdir if not exist
@@ -68,16 +57,9 @@ def run_sampling(sampling_np=False):
     # save the dataset
     df.to_csv(os.path.join(
         SAVE_PATH, "synthetic.csv"), index=False)
-
-    if sampling_np:
-        df_np = pd.DataFrame(spectrums_np, columns=S2_FULL_BANDS)
-        for attr in paras.keys():
-            df_np[attr] = paras[attr].cpu().numpy()
-        df_np.to_csv(os.path.join(
-            SAVE_PATH, "synthetic_np.csv"), index=False)
-
     print("Done!")
 
+# TODO Perhaps write a separate function to sample the dataset using rtm_np
 
 if __name__ == "__main__":
     run_sampling()
