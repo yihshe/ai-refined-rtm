@@ -54,7 +54,10 @@ def main(config):
     S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
                 'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
                 'B12_SWI2']
-    ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'fc', 'cd', 'h']
+    if config['arch']['type']=='VanillaAE':
+        ATTRS = ['1', '2', '3', '4', '5', '6', '7']
+    else:
+        ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'fc', 'cd', 'h']
 
     analyzer = {}
 
@@ -66,11 +69,25 @@ def main(config):
             data = data_dict[data_key].to(device)
             target = data_dict[target_key].to(device)
             output = model(data)
-            # calculate the squared loss of each element in the batch 
             latent = model.encode(data)
-            assert ATTRS == list(latent.keys()), "latent keys do not match"
-            # latent is a dictionary of parameters, convert it to a tensor
-            latent = torch.stack([latent[k] for k in latent.keys()], dim=1)
+
+            # calcualte the corrected bias if the model is AE_RTM_corr
+            if config['arch']['type']=='AE_RTM_corr':
+                # calculate the direct output from RTM
+                init_output = model.decode(latent)
+                # calculate the bias 
+                # NOTE the bias will need to be scaled back to original scale
+                bias = output - init_output
+                data_concat(analyzer, 'init_output', init_output)
+                data_concat(analyzer, 'bias', bias)
+
+            if config['arch']['type']=='VanillaAE':
+                assert len(ATTRS) == latent.shape[1], "latent shape does not match"
+            else:
+                assert ATTRS == list(latent.keys()), "latent keys do not match"
+                # latent is a dictionary of parameters, convert it to a tensor
+                latent = torch.stack([latent[k] for k in latent.keys()], dim=1)
+            
             l2_per_band = torch.square(output-target)
             data_concat(analyzer, 'output', output)
             data_concat(analyzer, 'target', target)
@@ -108,7 +125,16 @@ def main(config):
         analyzer['target'],
         analyzer['l2'],
         analyzer['latent']
-    )).cpu().numpy()
+    ))
+    if config['arch']['type']=='AE_RTM_corr':
+        columns += ['init_output_'+b for b in S2_BANDS]
+        columns += ['bias_'+b for b in S2_BANDS]
+        data = torch.hstack((
+            data,
+            analyzer['init_output'],
+            analyzer['bias']
+        ))
+    data = data.cpu().numpy()
     df = pd.DataFrame(columns=columns, data=data)
     df['sample_id'] = analyzer['sample_id']
     df['class'] = analyzer['class']
