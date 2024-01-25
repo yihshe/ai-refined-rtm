@@ -19,11 +19,11 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # Test the trained model of NN regressor on synthetic data
 # python3 -m pdb test_NN_analyze.py --config configs/NN_regressor.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor_noised_data/0912_043905/model_best.pth
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0124_160519/model_best.pth
 
 # Test the trained model of NN Regressor on real test data
-# python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0612_181507/model_best.pth
+python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
+        --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0124_160519/model_best.pth
 
 # Test the trained model of AE_RTM_syn on synthetic data
 # python3 test_AE_syn_analyze.py --config configs/AE_RTM_syn.json \
@@ -50,7 +50,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 datasets/preprocessing/standardize.py
 
 # Train NN Regressor
-python3 train.py --config configs/NN_regressor.json 
+# python3 train.py --config configs/NN_regressor.json 
 
 # python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor_cd/0622_215152/checkpoint-epoch30.pth

@@ -54,8 +54,7 @@ def main(config):
     S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
                 'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
                 'B12_SWI2']
-    # ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'cd']
-    ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'sd', 'h', 'fc']
+    ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'fc']
 
     analyzer = {}
 
@@ -67,15 +66,9 @@ def main(config):
     if mode == "test":
         with torch.no_grad():
             for batch_idx, data_dict in enumerate(data_loader):
-                # TODO change the input and target keys
                 data = data_dict[data_key].to(device)
                 target = data_dict[target_key].to(device)
                 output = model(data)
-
-                #
-                # save sample images, or do something with output here
-                #
-
                 # concatenate the loss per band to the loss_analyzer
                 l2_per_band = torch.square(output-target)
                 data_concat(analyzer, 'output', output)
@@ -107,7 +100,6 @@ def main(config):
             analyzer['output'],
             analyzer['target'],
             analyzer['l2'],
-            # analyzer['latent']
         )).cpu().numpy()
         df = pd.DataFrame(columns=columns, data=data)
         df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer_syn.csv',
@@ -119,15 +111,9 @@ def main(config):
     elif mode == "infer":
         with torch.no_grad():
             for batch_idx, data_dict in enumerate(data_loader):
-                # TODO change the input and target keys
                 data = data_dict[data_key].to(device)
                 # target = data_dict[target_key].to(device)
                 output = model(data)
-
-                #
-                # save sample images, or do something with output here
-                #
-
                 # concatenate the loss per band to the loss_analyzer
                 data_concat(analyzer, 'output', output)
                 data_concat(analyzer, 'sample_id', data_dict['sample_id'])
@@ -142,10 +128,10 @@ def main(config):
         df['sample_id'] = analyzer['sample_id']
         df['class'] = analyzer['class']
         df['date'] = analyzer['date']
-        df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer.csv',
+        df.to_csv(str(config.resume).split('.pth')[0]+'_testset_analyzer_real.csv',
                   index=False)
         logger.info('Analyzer saved to {}'.format(
-            str(config.resume).split('.pth')[0]+'_testset_analyzer.csv'
+            str(config.resume).split('.pth')[0]+'_testset_analyzer_real.csv'
         ))
 
 
