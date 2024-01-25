@@ -16,7 +16,7 @@ SEED = 123
 np.random.seed(SEED)
 BASE_DIR = '/maps/ys611/ai-refined-rtm/data/real/'
 DATA_DIR = os.path.join(BASE_DIR, 'BPWW_extract_2018.csv')
-SAVE_DIR = os.path.join(BASE_DIR, 'new_split')
+SAVE_DIR = BASE_DIR
 if not os.path.exists(SAVE_DIR):
     os.makedirs(SAVE_DIR)
 
@@ -61,9 +61,9 @@ if 'sample_id' not in df.columns:
 #%% split the data into train, validation, and test sets
 SPLIT_RATIO = 0.2
 train, test = train_test_split(
-    df, test_size=SPLIT_RATIO, random_state=42)
+    df, test_size=SPLIT_RATIO, random_state=0)
 train, valid = train_test_split(
-    train, test_size=SPLIT_RATIO, random_state=42)
+    train, test_size=SPLIT_RATIO, random_state=0)
 
 #%% reshape the data by breaking the time series into multiple samples
 train = reshape(train)

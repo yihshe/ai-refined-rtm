@@ -8,11 +8,12 @@ import json
 
 # %%
 BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/models/'
+# TODO add VanillaAE and NNRegressor for analysis
 CSV_PATH1 = os.path.join(
-    BASE_PATH, 'AE_RTM/0115_105753/model_best_testset_analyzer.csv')
+    BASE_PATH, 'AE_RTM/0123_175312/model_best_testset_analyzer.csv')
 CSV_PATH2 = os.path.join(
-    BASE_PATH, 'AE_RTM_corr/0115_135353/model_best_testset_analyzer.csv')
-SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0115_135353/histograms')
+    BASE_PATH, 'AE_RTM_corr/0124_000330/model_best_testset_analyzer.csv')
+SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0124_000330/plots')
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
             'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
             'B12_SWI2']
@@ -32,6 +33,7 @@ SCALE = np.load('/maps/ys611/ai-refined-rtm/data/real/train_x_scale.npy')
 for x in ['target', 'output']:
     df1[[f'{x}_{band}' for band in S2_BANDS]] = df1[[f'{x}_{band}' for band in S2_BANDS]]*SCALE + MEAN
     df2[[f'{x}_{band}' for band in S2_BANDS]] = df2[[f'{x}_{band}' for band in S2_BANDS]]*SCALE + MEAN
+df2[[f'bias_{band}' for band in S2_BANDS]] = df2[[f'bias_{band}' for band in S2_BANDS]]*SCALE + MEAN
 
 # get the unique tree species
 coniferous = ['Pseudotsuga menziesii', 'Picea abies', 'Pinus nigra', 
@@ -193,7 +195,7 @@ for i, attr1 in enumerate(ATTRS2):
     for j, attr2 in enumerate(ATTRS2):
         ax = axs[i, j]
         sns.scatterplot(x=f'latent_{attr1}', y=f'latent_{attr2}',
-                        data=df1, ax=ax, s=8, alpha=0.5)
+                        data=df2, ax=ax, s=8, alpha=0.5)
         fontsize = 22
         # set the distance between the title and the plot
         # ax.set_title(f'{attr1} v. {attr2}', fontsize=fontsize, pad=10)
@@ -232,7 +234,45 @@ for i, attr1 in enumerate(ATTRS2):
 plt.tight_layout()
 plt.savefig(os.path.join(
     SAVE_PATH, 'scatter_realset_vars_pairs_corr_coniferous_v_deciduous.png'))
-    
+
+#%% NEW scatter plot for bias pairs for AE_RTM_corr
+fig, axs = plt.subplots(11, 11, figsize=(35, 35))
+for i, band1 in enumerate(S2_BANDS):
+    for j, band2 in enumerate(S2_BANDS):
+        ax = axs[i, j]
+        sns.scatterplot(x=f'bias_{band1}', y=f'bias_{band2}',
+                        data=df2, ax=ax, s=8, alpha=0.5)
+        fontsize = 22
+        # set the distance between the title and the plot
+        ax.set_xlabel(band1, fontsize=fontsize)
+        ax.set_ylabel(band2, fontsize=fontsize)
+        # set the same ticks for both x and y axes
+        ax.tick_params(axis='both', which='major', labelsize=16)
+
+plt.tight_layout()
+plt.savefig(os.path.join(SAVE_PATH, 'scatter_realset_bias_pairs_corr.png'))
+
+# %% NEW scatter plot for bias pairs distinguishing Coniferous and Diceduous for AE_RTM_corr
+fig, axs = plt.subplots(11, 11, figsize=(35, 35))
+df_coniferous = df2[df2['class'].isin(coniferous)]
+df_deciduous = df2[df2['class'].isin(deciduous)]
+for i, band1 in enumerate(S2_BANDS):
+    for j, band2 in enumerate(S2_BANDS):
+        ax = axs[i, j]
+        sns.scatterplot(x=f'bias_{band1}', y=f'bias_{band2}',
+                        data=df_coniferous, ax=ax, s=8, alpha=0.5, color='red')
+        sns.scatterplot(x=f'bias_{band1}', y=f'bias_{band2}',
+                        data=df_deciduous, ax=ax, s=8, alpha=0.5, color='blue')
+        fontsize = 22
+        # set the distance between the title and the plot
+        ax.set_xlabel(band1, fontsize=fontsize)
+        ax.set_ylabel(band2, fontsize=fontsize)
+        # set the same ticks for both x and y axes
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        # ax.legend(fontsize=15)
+plt.tight_layout()
+plt.savefig(os.path.join(
+    SAVE_PATH, 'scatter_realset_bias_pairs_corr_coniferous_v_deciduous.png'))
 # %%
 """
 Scatter plot of input and reconstruction bands
@@ -243,7 +283,7 @@ for i, band in enumerate(S2_BANDS):
     ax = axs[i//4, i % 4]
     # adjust the point size and alpha and color
     sns.scatterplot(x='target_'+band, y='output_'+band,
-                    data=df2, ax=ax, s=8, alpha=0.5)
+                    data=df1, ax=ax, s=8, alpha=0.5)
     fontsize = 18
     # set the distance between the title and the plot
     ax.set_title(band, fontsize=fontsize, pad=10)
@@ -262,7 +302,7 @@ for i, band in enumerate(S2_BANDS):
 # make the last subplot empty
 # axs[2, 3].axis('off')
 plt.tight_layout()
-plt.savefig(os.path.join(SAVE_PATH, 'linescatter_realset_bands_corr_target_v_output.png'))
+plt.savefig(os.path.join(SAVE_PATH, 'linescatter_realset_bands_wocorr_target_v_output.png'))
 plt.show()
 
 # %%
@@ -280,7 +320,7 @@ for i, attr in enumerate(ATTRS):
     mean_deciduous = []
     std_deciduous = []
     for date in dates:
-        df_filtered = df2[df2['date']==date]
+        df_filtered = df1[df1['date']==date]
         mean_coniferous.append(df_filtered[df_filtered['class'].isin(coniferous)][f'latent_{attr}'].mean())
         std_coniferous.append(df_filtered[df_filtered['class'].isin(coniferous)][f'latent_{attr}'].std())
         mean_deciduous.append(df_filtered[df_filtered['class'].isin(deciduous)][f'latent_{attr}'].mean())
@@ -297,7 +337,64 @@ for i, attr in enumerate(ATTRS):
     ax.legend(fontsize=16)
     ax.tick_params(axis='both', which='major', labelsize=10)
 plt.tight_layout()
-plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_vars_corr_coniferous_v_deciduous.png'))
+plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_vars_wocorr_coniferous_v_deciduous.png'))
 plt.show()
+
+# %% NEW randomly select five samples and plot the time series of the mean and show the std as error bars for AE_RTM_corr
+# randomly select five samples
+sample_ids = np.random.choice(df2['sample_id'].unique(), 10)
+for sample_id in sample_ids:
+    fig, axs = plt.subplots(3, 3, figsize=(22, 15))
+    for i, attr in enumerate(ATTRS):
+        ax = axs[i//3, i % 3]
+        pts = []
+        # get the time seris of mean and std of the clustered samples for each variable
+        for date in dates:
+            df_filtered = df2[df2['date']==date]
+            pts.append(df_filtered[df_filtered['sample_id']==sample_id][f'latent_{attr}'].values[0])
+        dates_plot = [date.split('.')[2]+'/'+date.split('.')[1] for date in dates]
+        ax.plot(dates_plot, pts, 'o-', color='blue')
+        fontsize = 18
+        # set the distance between the title and the plot
+        ax.set_xlabel('Date', fontsize=fontsize)
+        ax.set_ylabel(attr, fontsize=fontsize)
+        ax.tick_params(axis='both', which='major', labelsize=10)
+    sample_forest = 'Coniferous' if df2[df2['sample_id']==sample_id]['class'].values[0] in coniferous else 'Deciduous'
+    sample_species = df2[df2['sample_id']==sample_id]['class'].values[0]
+    # Set the title of the figure
+    plt.suptitle(f"{sample_forest}: {sample_species}", fontsize=22)
+    # Set the distance between the title and the plot
+    plt.subplots_adjust(top=1.1)
+    plt.tight_layout()
+    plt.savefig(os.path.join(SAVE_PATH, f'timeseries_realset_vars_corr_{sample_forest}_{sample_species}_{sample_id}.png'))
+
+# %% NEW plot the time series of the mean and show the std as error bars for AE_RTM_corr
+fig, axs = plt.subplots(3, 4, figsize=(28, 15))
+for i, band in enumerate(S2_BANDS):
+    ax = axs[i//4, i % 4]
+    # get the time seris of mean and std of the clustered samples for each variable
+    mean_coniferous = []
+    std_coniferous = []
+    mean_deciduous = []
+    std_deciduous = []
+    for date in dates:
+        df_filtered = df2[df2['date']==date]
+        mean_coniferous.append(df_filtered[df_filtered['class'].isin(coniferous)][f'bias_{band}'].mean())
+        std_coniferous.append(df_filtered[df_filtered['class'].isin(coniferous)][f'bias_{band}'].std())
+        mean_deciduous.append(df_filtered[df_filtered['class'].isin(deciduous)][f'bias_{band}'].mean())
+        std_deciduous.append(df_filtered[df_filtered['class'].isin(deciduous)][f'bias_{band}'].std())
+    
+    # plot the time series of the mean and show the std as error bars
+    # Plot only the month and day of the date (original format 'yyyy.mm.dd', to this formar like dd/mm)
+    dates_plot = [date.split('.')[2]+'/'+date.split('.')[1] for date in dates]
+    ax.errorbar(x=dates_plot, y=mean_coniferous, yerr=std_coniferous, fmt='o', color = 'red', label='Coniferous')
+    ax.errorbar(x=dates_plot, y=mean_deciduous, yerr=std_deciduous, fmt='o', color = 'blue', label='Deciduous')
+    fontsize = 18
+    ax.set_xlabel('Date', fontsize=fontsize)
+    ax.set_ylabel(band, fontsize=fontsize)
+    ax.legend(fontsize=16)
+    ax.tick_params(axis='both', which='major', labelsize=10)
+plt.tight_layout()
+plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_bias_corr_coniferous_v_deciduous.png'))
 
 # %%
