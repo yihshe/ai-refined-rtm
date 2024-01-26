@@ -61,9 +61,9 @@ if 'sample_id' not in df.columns:
 #%% split the data into train, validation, and test sets
 SPLIT_RATIO = 0.2
 train, test = train_test_split(
-    df, test_size=SPLIT_RATIO, random_state=0)
+    df, test_size=SPLIT_RATIO, random_state=42)
 train, valid = train_test_split(
-    train, test_size=SPLIT_RATIO, random_state=0)
+    train, test_size=SPLIT_RATIO, random_state=42)
 
 #%% reshape the data by breaking the time series into multiple samples
 train = reshape(train)
@@ -82,4 +82,31 @@ np.save(os.path.join(SAVE_DIR, 'train_x_scale.npy'), scaler.scale_)
 train.to_csv(os.path.join(SAVE_DIR, 'train.csv'), index=False)
 valid.to_csv(os.path.join(SAVE_DIR, 'valid.csv'), index=False)
 test.to_csv(os.path.join(SAVE_DIR, 'test.csv'), index=False)
+#%%
+"""
+Rescale the real test set using the scaler from the synthetic dataset
+This test set will be used to evaluate the model trained on the synthetic dataset
+"""
+test = pd.read_csv(os.path.join(SAVE_DIR, 'test.csv'))
+scaler = {
+    'real':{
+        'mean': np.load(os.path.join('/maps/ys611/ai-refined-rtm/data/real', 
+                                     'train_x_mean.npy')),
+        'scale': np.load(os.path.join('/maps/ys611/ai-refined-rtm/data/real',
+                                      'train_x_scale.npy'))
+    },
+    'synthetic':{
+        'mean': np.load(
+            os.path.join('/maps/ys611/ai-refined-rtm/data/synthetic/20240124', 
+                         'train_x_mean.npy')),
+        'scale': np.load(
+            os.path.join('/maps/ys611/ai-refined-rtm/data/synthetic/20240124', 
+                         'train_x_scale.npy'))
+    }
+}
+# rescale the real test set
+test[S2_BANDS] = (test[S2_BANDS] * scaler['real']['scale']) + scaler['real']['mean']
+test[S2_BANDS] = (test[S2_BANDS] - scaler['synthetic']['mean']) / scaler['synthetic']['scale']
+test.to_csv(os.path.join(SAVE_DIR, 'test_syn.csv'), index=False)
+
 # %%

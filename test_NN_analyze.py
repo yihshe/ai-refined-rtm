@@ -8,11 +8,11 @@ import model.model as module_arch
 from parse_config import ConfigParser
 import pandas as pd
 import numpy as np
+import json
 
 
 def main(config):
     logger = config.get_logger('test')
-
     # setup data_loader instances
     # NOTE the test set needs to be set beforehand e.g. in dataset.py
     data_loader = getattr(module_data, config['data_loader']['type'])(
@@ -55,6 +55,7 @@ def main(config):
                 'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
                 'B12_SWI2']
     ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'fc']
+    assert ATTRS == list(rtm_paras.keys())
 
     analyzer = {}
 
@@ -95,7 +96,7 @@ def main(config):
         for k in ['output', 'target', 'l2']:
             columns += [k+'_'+b for b in ATTRS]
 
-        # TODO hstack the columns we want to save
+        # NOTE all the output and target variales here are saved in the normalized scale ranging from 0 to 1
         data = torch.hstack((
             analyzer['output'],
             analyzer['target'],

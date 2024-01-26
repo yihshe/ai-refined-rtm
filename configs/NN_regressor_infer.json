@@ -18,7 +18,7 @@
             "num_workers": 2
         },
         "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/real/valid.csv",
-        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/real/test.csv"
+        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/real/test_syn.csv"
     },
     "optimizer": {
         "type": "Adam",

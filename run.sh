@@ -8,12 +8,12 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # Test the trained model
 # python3 -m pdb test.py --config configs/vanilla_AE.json \
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/VanillaAE/0115_104855/model_best.pth
-# python3 -m pdb test_AE_analyze.py --config configs/vanilla_AE.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/VanillaAE/0123_173930/model_best.pth
+# python3 test_AE_analyze.py --config configs/vanilla_AE.json \
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/VanillaAE/0125_165304/model_best.pth
 
 # Test the trained model of AE with RTM
 # python3 -m pdb test_AE_analyze.py --config configs/AE_RTM.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM/0123_175312/model_best.pth
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM/0125_170921/model_best.pth
 
 # Test the trained model of vanilla AE
 # python3 -m pdb test_AE_analyze.py --config configs/vanilla_AE_scaled.json \
@@ -24,8 +24,8 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0124_160519/model_best.pth
 
 # Test the trained model of NN Regressor on real test data
-# python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0124_160519/model_best.pth
+python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
+        --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0124_160519/model_best.pth
 
 # Test the trained model of AE_RTM_syn on synthetic data
 # python3 test_AE_syn_analyze.py --config configs/AE_RTM_syn.json \
@@ -40,7 +40,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # Test the trained model of AE_RTM_corr on real test data
 # python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0124_000330/model_best.pth
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0125_232332/model_best.pth
 
 # Generate synthetic data from RTM
 # python3 -m pdb datasets/sampling/sampling.py
@@ -60,13 +60,13 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 datasets/preprocessing/reshape.py
 
 # Train a simple vanilla autoencoder without RTM
-python3 train.py --config configs/vanilla_AE.json
+# python3 train.py --config configs/vanilla_AE.json
 
 # Train a simple vanilla autoencoder with RTM
-python3 train.py --config configs/AE_RTM.json 
+# python3 train.py --config configs/AE_RTM.json 
 
 # Train an autoencoder with RTM and with bias correction
-python3 train.py --config configs/AE_RTM_corr.json 
+# python3 train.py --config configs/AE_RTM_corr.json 
 
 # Train a simple vanilla autoencoder with RTM on synthetic data
 # python3 train.py --config configs/AE_RTM_syn.json
