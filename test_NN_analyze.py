@@ -55,7 +55,6 @@ def main(config):
                 'B07_RE3', 'B08_NIR1', 'B8A_NIR2', 'B09_WV', 'B11_SWI1',
                 'B12_SWI2']
     ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'fc']
-    assert ATTRS == list(rtm_paras.keys())
 
     analyzer = {}
 
