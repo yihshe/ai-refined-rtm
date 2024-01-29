@@ -55,13 +55,17 @@ for x in ['target', 'output']:
 df2[[f'bias_{band}' for band in S2_BANDS]] = df2[[f'bias_{band}' for band in S2_BANDS]]*SCALE + MEAN
 
 # rename 'output_{attr}' in df3 as 'latent_{attr}'
-df3.rename(
-    columns={f'output_{attr}': f'latent_{attr}' for attr in ATTRS}, 
-    inplace=True)
+# df3.rename(
+#     columns={f'output_{attr}': f'latent_{attr}' for attr in ATTRS}, 
+#     inplace=True)
 # map the output varibles of df3 to the original scale
 for attr in ATTRS:
     df3[f'latent_{attr}'] = df3[f'latent_{attr}']*(
         rtm_paras[attr]['max'] - rtm_paras[attr]['min']) + rtm_paras[attr]['min']
+MEAN_SYN = np.load('/maps/ys611/ai-refined-rtm/data/synthetic/20240124/train_x_mean.npy')
+SCALE_SYN = np.load('/maps/ys611/ai-refined-rtm/data/synthetic/20240124/train_x_scale.npy')
+for x in ['target', 'output']:
+    df3[[f'{x}_{band}' for band in S2_BANDS]] = df3[[f'{x}_{band}' for band in S2_BANDS]]*SCALE_SYN + MEAN_SYN
     
 # get the unique tree species
 coniferous = ['Pseudotsuga menziesii', 'Picea abies', 'Pinus nigra', 
@@ -107,7 +111,6 @@ for i, attr in enumerate(ATTRS):
         bins=NUM_BINS,
         ax=ax,
         color='blue',
-        # label='AE_RTM_syn',
         label='AE_RTM_corr',
         alpha=0.6,
     )
@@ -375,7 +378,7 @@ for i, band in enumerate(S2_BANDS):
     ax = axs[i//4, i % 4]
     # adjust the point size and alpha and color
     sns.scatterplot(x='target_'+band, y='output_'+band,
-                    data=df2, ax=ax, s=8, alpha=0.5)
+                    data=df3, ax=ax, s=8, alpha=0.5)
     fontsize = 18
     # set the distance between the title and the plot
     ax.set_title(band, fontsize=fontsize, pad=10)
@@ -394,7 +397,7 @@ for i, band in enumerate(S2_BANDS):
 # make the last subplot empty
 axs[-1, -1].axis('off')
 plt.tight_layout()
-plt.savefig(os.path.join(SAVE_PATH, 'linescatter_realset_bands_corr_target_v_output.png'))
+plt.savefig(os.path.join(SAVE_PATH, 'linescatter_realset_bands_nn_target_v_output.png'))
 plt.show()
 
 # %%
