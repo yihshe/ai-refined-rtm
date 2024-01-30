@@ -16,7 +16,7 @@ CSV_PATH1 = os.path.join(
 CSV_PATH2 = os.path.join(
     BASE_PATH, 'AE_RTM_corr/0124_000330/model_best_testset_analyzer.csv')
 
-# NOTE models trained on the new split have showed similar results
+# NOTE models trained on the new split (20240125) have showed similar results
 # CSV_PATH0 = os.path.join(
 #     BASE_PATH, 'VanillaAE/0125_165304/model_best_testset_analyzer.csv')
 # CSV_PATH1 = os.path.join(
@@ -27,7 +27,6 @@ CSV_PATH2 = os.path.join(
 CSV_PATH3 = os.path.join(
     BASE_PATH, 'NNRegressor/0124_160519/model_best_testset_analyzer_real.csv')
 
-# SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0124_000330/plots')
 SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0124_000330/plots')
 
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
@@ -84,28 +83,29 @@ N2, NNRegressor and AE_RTM_corr
 """
 # Histogram of the latent variables of both models (AE_RTM and AE_RTM_corr)
 NUM_BINS = 100
+ATTRS = ['N', 'cab', 'LAIu', 'fc']
 # create one figure and plot both variable predictions of different models as a subplot
-fig, axs = plt.subplots(2,4, figsize = (25, 10))
-# fig, axs = plt.subplots(3, 3, figsize=(20, 15))
+# fig, axs = plt.subplots(2,4, figsize = (25, 10))
+fig, axs = plt.subplots(1,4, figsize = (25, 5))
 for i, attr in enumerate(ATTRS):
-    ax=axs[i//4, i % 4]
-    # ax=axs[i//3, i % 3]
-    sns.histplot(
-        df1[f'latent_{attr}'].values,
-        bins=NUM_BINS,
-        ax=ax,
-        color='red',
-        label='AE_RTM',
-        alpha=0.5,
-    )
+    # ax=axs[i//4, i % 4]
+    ax = axs[i]
     # sns.histplot(
-    #     df3[f'latent_{attr}'].values,
+    #     df1[f'latent_{attr}'].values,
     #     bins=NUM_BINS,
     #     ax=ax,
     #     color='red',
-    #     label='NN_Regressor',
+    #     label='AE_RTM',
     #     alpha=0.5,
     # )
+    sns.histplot(
+        df3[f'latent_{attr}'].values,
+        bins=NUM_BINS,
+        ax=ax,
+        color='red',
+        label='NN_Regressor',
+        alpha=0.5,
+    )
     sns.histplot(
         df2[f'latent_{attr}'].values,
         bins=NUM_BINS,
@@ -121,10 +121,10 @@ for i, attr in enumerate(ATTRS):
     ax.set_ylabel('Frequency', fontsize=fontsize)
     ax.legend(fontsize=fontsize)
 # remove the last subplot
-axs[-1, -1].axis('off')
+# axs[-1, -1].axis('off')
 plt.tight_layout()
 plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_realset_vars_AE_RTM_v_corr.png'), dpi=300)
+    SAVE_PATH, 'histogram_realset_vars_NN_v_corr_4.png'), dpi=300)
 plt.show()
 
 # %%
@@ -136,10 +136,13 @@ for AE_RTM_corr
 df_coniferous = df2[df2['class'].isin(coniferous)]
 df_deciduous = df2[df2['class'].isin(deciduous)]
 NUM_BINS = 100
+ATTRS = ['N', 'cab', 'LAIu', 'fc']
 # create one figure and plot both variable predictions of different models as a subplot
-fig, axs = plt.subplots(2, 4, figsize=(25, 10))
+# fig, axs = plt.subplots(2, 4, figsize=(25, 10))
+fig, axs = plt.subplots(1, 4, figsize=(25, 5))
 for i, attr in enumerate(ATTRS):
-    ax=axs[i//4, i % 4]
+    # ax=axs[i//4, i % 4]
+    ax = axs[i]
     sns.histplot(
         df_coniferous[f'latent_{attr}'].values,
         bins=NUM_BINS,
@@ -163,10 +166,10 @@ for i, attr in enumerate(ATTRS):
     ax.set_xlabel(attr, fontsize=fontsize)
     ax.set_ylabel('Frequency', fontsize=fontsize)
     ax.legend(fontsize=fontsize)
-axs[-1, -1].axis('off')
+# axs[-1, -1].axis('off')
 plt.tight_layout()
 plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_realset_vars_corr_coniferous_v_deciduous.png'), dpi=300)
+    SAVE_PATH, 'histogram_realset_vars_corr_coniferous_v_deciduous_4.png'), dpi=300)
 plt.show()
     
 # %%
@@ -251,8 +254,8 @@ for i, band in enumerate(S2_BANDS):
     ax.legend(fontsize=fontsize)
 axs[-1, -1].axis('off')
 plt.tight_layout()
-plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_realset_bias_corr.png'), dpi=300)
+# plt.savefig(os.path.join(
+#     SAVE_PATH, 'histogram_realset_bias_corr.png'), dpi=300)
 # %%
 """
 Scatter plot for selected variables for AE_RTM_corr
@@ -373,12 +376,15 @@ Scatter plot of input and reconstruction bands
 Plot for VanillaAE, AE_RTM, AE_RTM_corr
 """
 # Scatter plot of the input and reconstructed bands
-fig, axs = plt.subplots(3, 4, figsize=(20, 15))
+# fig, axs = plt.subplots(3, 4, figsize=(20, 15))
+fig, axs = plt.subplots(1, 4, figsize=(20, 5))
+S2_BANDS = ['B02_BLUE', 'B05_RE1', 'B08_NIR1', 'B11_SWI1']
 for i, band in enumerate(S2_BANDS):
-    ax = axs[i//4, i % 4]
+    # ax = axs[i//4, i % 4]
+    ax = axs[i]
     # adjust the point size and alpha and color
     sns.scatterplot(x='target_'+band, y='output_'+band,
-                    data=df3, ax=ax, s=8, alpha=0.5)
+                    data=df2, ax=ax, s=8, alpha=0.5)
     fontsize = 18
     # set the distance between the title and the plot
     ax.set_title(band, fontsize=fontsize, pad=10)
@@ -395,9 +401,9 @@ for i, band in enumerate(S2_BANDS):
     ax.set_xlim(limits)
     ax.set_ylim(limits)
 # make the last subplot empty
-axs[-1, -1].axis('off')
+# axs[-1, -1].axis('off')
 plt.tight_layout()
-plt.savefig(os.path.join(SAVE_PATH, 'linescatter_realset_bands_nn_target_v_output.png'))
+plt.savefig(os.path.join(SAVE_PATH, 'linescatter_realset_bands_corr_target_v_output_4.png'))
 plt.show()
 
 # %%
@@ -408,17 +414,20 @@ samples and then plot the time series of the mean and show the std as error bars
 Plot for VanillaAE, AE_RTM, AE_RTM_corr, NNRegressor
 """
 # ATTRS2 = ATTRS_VANILLA
-ATTRS2 = ATTRS
-fig, axs = plt.subplots(2, 4, figsize=(30, 10))
+# ATTRS2 = ATTRS
+ATTRS2 = ['N', 'cab', 'LAIu', 'fc']
+# fig, axs = plt.subplots(2, 4, figsize=(30, 10))
+fig, axs = plt.subplots(1, 4, figsize=(30, 5))
 for i, attr in enumerate(ATTRS2):
-    ax = axs[i//4, i % 4]
+    # ax = axs[i//4, i % 4]
+    ax = axs[i]
     # get the time seris of mean and std of the clustered samples for each variable
     mean_coniferous = []
     std_coniferous = []
     mean_deciduous = []
     std_deciduous = []
     for date in dates:
-        df_filtered = df3[df3['date']==date]
+        df_filtered = df2[df2['date']==date]
         mean_coniferous.append(df_filtered[df_filtered['class'].isin(coniferous)][f'latent_{attr}'].mean())
         std_coniferous.append(df_filtered[df_filtered['class'].isin(coniferous)][f'latent_{attr}'].std())
         mean_deciduous.append(df_filtered[df_filtered['class'].isin(deciduous)][f'latent_{attr}'].mean())
@@ -434,9 +443,9 @@ for i, attr in enumerate(ATTRS2):
     ax.set_ylabel(attr, fontsize=fontsize)
     ax.legend(fontsize=16)
     ax.tick_params(axis='both', which='major', labelsize=10)
-axs[-1, -1].axis('off')
+# axs[-1, -1].axis('off')
 plt.tight_layout()
-plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_vars_nn_coniferous_v_deciduous.png'))
+# plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_vars_corr_coniferous_v_deciduous_4.png'))
 plt.show()
 
 # %% NEW randomly select five samples and plot the time series of the mean and show the std as error bars for AE_RTM_corr

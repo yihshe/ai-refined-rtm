@@ -24,8 +24,8 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0124_160519/model_best.pth
 
 # Test the trained model of NN Regressor on real test data
-python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
-        --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0124_160519/model_best.pth
+# python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
+#         --resume /maps/ys611/ai-refined-rtm/saved/models/NNRegressor/0124_160519/model_best.pth
 
 # Test the trained model of AE_RTM_syn on synthetic data
 # python3 test_AE_syn_analyze.py --config configs/AE_RTM_syn.json \
@@ -39,8 +39,8 @@ python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532/model_best.pth
 
 # Test the trained model of AE_RTM_corr on real test data
-# python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0125_232332/model_best.pth
+python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
+        --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr_new_loss/0130_102440/model_best.pth
 
 # Generate synthetic data from RTM
 # python3 -m pdb datasets/sampling/sampling.py
@@ -67,6 +67,8 @@ python3 -m pdb test_NN_analyze.py --config configs/NN_regressor_infer.json \
 
 # Train an autoencoder with RTM and with bias correction
 # python3 train.py --config configs/AE_RTM_corr.json 
+
+# python3 train.py --config configs/vanilla_AE.json
 
 # Train a simple vanilla autoencoder with RTM on synthetic data
 # python3 train.py --config configs/AE_RTM_syn.json

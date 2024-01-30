@@ -1,11 +1,11 @@
 {
-    "name": "VanillaAE",
+    "name": "VanillaAE_latent8",
     "n_gpu": 1,
     "arch": {
         "type": "VanillaAE",
         "args": {
             "input_dim": 11,
-            "hidden_dim": 7
+            "hidden_dim": 8
         }
     },
     "data_loader": {
