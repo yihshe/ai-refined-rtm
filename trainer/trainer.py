@@ -44,6 +44,9 @@ class Trainer(BaseTrainer):
         # define a flag to indicate whether to stablize the gradient or not
         self.stablize_grad = config['trainer']['stablize_grad']
         self.stablize_count = 0
+        self.condition = None
+        if config['arch']['type'] in ['AE_RTM_con', 'AE_RTM_corr_con']:
+            self.condition = ['species_idx','group_idx', 'sin_date','cos_date']
 
     def _train_epoch(self, epoch):
         """
@@ -59,7 +62,13 @@ class Trainer(BaseTrainer):
             data = data_dict[self.data_key].to(self.device)
             target = data_dict[self.target_key].to(self.device)
             self.optimizer.zero_grad()
-            output = self.model(data)
+            if self.condition is not None:
+                conditions = {
+                    key: data_dict[key].to(self.device) for key in self.condition
+                }
+                output = self.model(data, **conditions)
+            else:
+                output = self.model(data)
             loss = self.criterion(output, target)
             loss.backward()
             # statblize the gradient if RTM is used
@@ -154,7 +163,13 @@ class Trainer(BaseTrainer):
                 data = data_dict[self.data_key].to(self.device)
                 target = data_dict[self.target_key].to(self.device)
 
-                output = self.model(data)
+                if self.condition is not None:
+                    conditions = {
+                        key: data_dict[key].to(self.device) for key in self.condition
+                    }
+                    output = self.model(data, **conditions)
+                else:
+                    output = self.model(data)
                 loss = self.criterion(output, target)
 
                 # # track the validation loss per band and log to wandb

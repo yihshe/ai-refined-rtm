@@ -14,7 +14,8 @@ class SpectrumS2(data.Dataset):
         self.s2_bands = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1',
                          'B06_RE2', 'B07_RE3', 'B08_NIR1', 'B8A_NIR2',
                          'B09_WV', 'B11_SWI1', 'B12_SWI2']
-        self.attr_info = ['class', 'sample_id', 'date']
+        self.attr_info = ['class', 'sample_id', 'date', 
+                          'sin_date', 'cos_date', 'species_idx', 'group_idx']
         # NOTE currently the ground truth of latent variables are not available
 
     def __len__(self):

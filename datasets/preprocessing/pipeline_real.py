@@ -45,8 +45,8 @@ def encode_dates(df):
     df['day_of_year'] = dates.dt.dayofyear
     max_day_of_year = 366
     # Cyclical transformation
-    df['date_sin'] = np.sin(2 * np.pi * df['day_of_year'] / max_day_of_year)
-    df['date_cos'] = np.cos(2 * np.pi * df['day_of_year'] / max_day_of_year)
+    df['sin_date'] = np.sin(2 * np.pi * df['day_of_year'] / max_day_of_year)
+    df['cos_date'] = np.cos(2 * np.pi * df['day_of_year'] / max_day_of_year)
     df = df.drop(columns='day_of_year')
     return df
 
@@ -87,7 +87,7 @@ def reshape(df):
     # create a new dataframe with unique bands as column
     return pd.DataFrame(data, columns=S2_BANDS+
                         ['class', 'sample_id', 'date', 
-                         'date_sin', 'date_cos', 'species_idx', 'group_idx'])
+                         'sin_date', 'cos_date', 'species_idx', 'group_idx'])
 
 #%% load the real data
 df = pd.read_csv(DATA_DIR, delimiter=';')
