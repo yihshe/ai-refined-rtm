@@ -14,7 +14,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # Test the trained model of AE with RTM
 # python3 -m pdb test_AE_analyze.py --config configs/AE_RTM.json \
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM/0125_170921/model_best.pth
-
+        
 # Test the trained model of vanilla AE
 # python3 -m pdb test_AE_analyze.py --config configs/vanilla_AE_scaled.json \
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/VanillaAE_scaled/0612_220221/model_best.pth
@@ -39,8 +39,8 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 #         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_syn/0614_112532/model_best.pth
 
 # Test the trained model of AE_RTM_corr on real test data
-# python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
-#         --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr_new_loss/0130_102440/model_best.pth
+python3 -m pdb test_AE_analyze.py --config configs/AE_RTM_corr.json \
+        --resume /maps/ys611/ai-refined-rtm/saved/models/AE_RTM_corr/0124_000330/model_best.pth
 
 # Generate synthetic data from RTM
 # python3 -m pdb datasets/sampling/sampling.py
@@ -63,10 +63,10 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 # python3 train.py --config configs/vanilla_AE.json
 
 # Train a simple vanilla autoencoder with RTM
-python3 train.py --config configs/AE_RTM_con.json 
+# python3 train.py --config configs/AE_RTM_con.json 
 
 # Train an autoencoder with RTM and with bias correction
-python3 train.py --config configs/AE_RTM_corr_con.json 
+# python3 train.py --config configs/AE_RTM_corr_con.json 
 
 # python3 train.py --config configs/vanilla_AE.json
 

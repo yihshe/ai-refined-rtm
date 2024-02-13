@@ -196,7 +196,7 @@ class EmbeddingModule(nn.Module):
         # Concatenate all embeddings and cyclical date features
         combined_embed = torch.cat([species_embed, group_idx.unsqueeze(-1), 
                                     sin_date.unsqueeze(-1), 
-                                    cos_date.unsqueeze(-1)], dim=1)
+                                    cos_date.unsqueeze(-1)], dim=1).float()
         return combined_embed
 
 class AE_RTM_con(BaseModel):

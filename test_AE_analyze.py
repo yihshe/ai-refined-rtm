@@ -8,6 +8,7 @@ import model.model as module_arch
 from parse_config import ConfigParser
 import pandas as pd
 import numpy as np
+from rtm_torch.rtm import RTM
 
 
 def main(config):
@@ -64,6 +65,15 @@ def main(config):
         condition = ['species_idx','group_idx', 'sin_date','cos_date']
 
     analyzer = {}
+    rtm = RTM()
+    S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
+                    'B05_RE1', 'B06_RE2', 'B07_RE3', 'B08_NIR1',
+                    'B8A_NIR2', 'B09_WV', 'B10', 'B11_SWI1',
+                    'B12_SWI2']
+    bands_index = [i for i in range(
+        len(S2_FULL_BANDS)) if S2_FULL_BANDS[i] not in ['B01', 'B10']]
+    MEAN = np.load('/maps/ys611/ai-refined-rtm/data/real/train_x_mean.npy')
+    SCALE = np.load('/maps/ys611/ai-refined-rtm/data/real/train_x_scale.npy')
 
     with torch.no_grad():
         # for i, (data, target) in enumerate(tqdm(data_loader)):
@@ -81,14 +91,17 @@ def main(config):
             else:
                 output = model(data)
                 latent = model.encode(data)
+                # NOTE the following line is for AE_RTM_corr or AE_RTM_corr_con
+                # output = model.correct(model.decode(latent))
 
             # calcualte the corrected bias if the model is AE_RTM_corr
             if config['arch']['type'] in ['AE_RTM_corr', 'AE_RTM_corr_con']:
                 # calculate the direct output from RTM
-                init_output = model.decode(latent)
+                # init_output = model.decode(latent)
+                init_output = rtm.run(**latent)[:, bands_index]
                 # calculate the bias 
                 # NOTE the bias will need to be scaled back to original scale
-                bias = output - init_output
+                bias = (output*SCALE + MEAN) - init_output
                 data_concat(analyzer, 'init_output', init_output)
                 data_concat(analyzer, 'bias', bias)
 
@@ -137,7 +150,7 @@ def main(config):
         analyzer['l2'],
         analyzer['latent']
     ))
-    if config['arch']['type']=='AE_RTM_corr':
+    if config['arch']['type'] in ['AE_RTM_corr', 'AE_RTM_corr_con']:
         columns += ['init_output_'+b for b in S2_BANDS]
         columns += ['bias_'+b for b in S2_BANDS]
         data = torch.hstack((
