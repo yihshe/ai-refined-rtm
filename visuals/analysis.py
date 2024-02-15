@@ -24,7 +24,7 @@ CSV_PATH3 = os.path.join(
 # CSV_PATH2 = os.path.join(
 #     BASE_PATH, 'AE_RTM_corr_con/0201_201257/model_best_testset_analyzer.csv')
 
-SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0124_000330/plots')
+SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr/0124_000330/plots/0215')
 # SAVE_PATH = os.path.join(BASE_PATH, 'AE_RTM_corr_con/0201_201257/plots')
 
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
@@ -51,6 +51,10 @@ for x in ['target', 'output']:
     df2[[f'{x}_{band}' for band in S2_BANDS]] = df2[[f'{x}_{band}' for band in S2_BANDS]]*SCALE + MEAN
 # df2[[f'bias_{band}' for band in S2_BANDS]] = df2[[f'bias_{band}' for band in S2_BANDS]]*SCALE + MEAN
 # df2[[f'init_output_{band}' for band in S2_BANDS]] = df2[[f'init_output_{band}' for band in S2_BANDS]]*SCALE + MEAN
+    
+# drop the columns in df2 beginning with 'l2' and save the data
+# df2 = df2[df2.columns.drop(list(df2.filter(regex='l2')))]
+# df2.to_csv(os.path.join(SAVE_PATH, 'model_best_testset_analyzer_cleaned.csv'), index=False)
 
 # map the output varibles of df3 to the original scale
 for attr in ATTRS:
@@ -78,15 +82,16 @@ N2, NNRegressor and AE_RTM_corr
 """
 # Histogram of the latent variables of both models (AE_RTM and AE_RTM_corr)
 NUM_BINS = 100
+ATTRS = list(rtm_paras.keys())
 # ATTRS = ['N', 'cab', 'LAIu', 'fc']
-ATTRS = ['N', 'fc']
+# ATTRS = ['N', 'fc']
 # create one figure and plot both variable predictions of different models as a subplot
-# fig, axs = plt.subplots(2,4, figsize = (25, 10))
+fig, axs = plt.subplots(2,4, figsize = (25, 10))
 # fig, axs = plt.subplots(1,4, figsize = (25, 5))
-fig, axs = plt.subplots(1, 2, figsize = (12.5, 5))
+# fig, axs = plt.subplots(1, 2, figsize = (12.5, 5))
 for i, attr in enumerate(ATTRS):
-    # ax=axs[i//4, i % 4]
-    ax = axs[i]
+    ax=axs[i//4, i % 4]
+    # ax = axs[i]
     # sns.histplot(
     #     df1[f'latent_{attr}'].values,
     #     bins=NUM_BINS,
@@ -113,15 +118,17 @@ for i, attr in enumerate(ATTRS):
     # )
     # change the fontsize of the x and y ticks
     ax.tick_params(axis='both', which='major', labelsize=22)
+    # set the range of x axis as the physical range of the variable
+    ax.set_xlim(rtm_paras[attr]['min'], rtm_paras[attr]['max'])
     fontsize = 30
     ax.set_xlabel(attr, fontsize=fontsize)
     ax.set_ylabel('Frequency', fontsize=fontsize)
     ax.legend(fontsize=22)
 # remove the last subplot
-# axs[-1, -1].axis('off')
+axs[-1, -1].axis('off')
 plt.tight_layout()
-plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_realset_vars_NN_2.png'), dpi=300)
+# plt.savefig(os.path.join(
+#     SAVE_PATH, 'histogram_realset_vars_NN.png'), dpi=300)
 plt.show()
 
 # %%
@@ -248,15 +255,49 @@ for i, band in enumerate(S2_BANDS):
         alpha=0.5,
     )
     # change the fontsize of the x and y ticks
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    fontsize = 18
+    ax.tick_params(axis='both', which='major', labelsize=19)
+    fontsize = 20
     ax.set_xlabel(band, fontsize=fontsize)
     ax.set_ylabel('Frequency', fontsize=fontsize)
     ax.legend(fontsize=fontsize)
 axs[-1, -1].axis('off')
 plt.tight_layout()
-# plt.savefig(os.path.join(
-#     SAVE_PATH, 'histogram_realset_bias_corr.png'), dpi=300)
+plt.savefig(os.path.join(
+    SAVE_PATH, 'histogram_realset_bias_corr.png'), dpi=300)
+
+# %% histogram of bias clustered by forest type for AE_RTM_corr
+NUM_BINS = 100
+fig, axs = plt.subplots(3, 4, figsize=(25, 15))
+df_coniferous = df2[df2['class'].isin(coniferous)]
+df_deciduous = df2[df2['class'].isin(deciduous)]
+for i, band in enumerate(S2_BANDS):
+    ax=axs[i//4, i % 4]
+    sns.histplot(
+        df_coniferous[f'bias_{band}'].values,
+        bins=NUM_BINS,
+        ax=ax,
+        color='red',
+        label='Coniferous',
+        alpha=0.6,
+    )
+    sns.histplot(
+        df_deciduous[f'bias_{band}'].values,
+        bins=NUM_BINS,
+        ax=ax,
+        color='blue',
+        label='Deciduous',
+        alpha=0.6,
+    )
+    # change the fontsize of the x and y ticks
+    ax.tick_params(axis='both', which='major', labelsize=19)
+    fontsize = 20
+    ax.set_xlabel(band, fontsize=fontsize)
+    ax.set_ylabel('Frequency', fontsize=fontsize)
+    ax.legend(fontsize=fontsize)
+axs[-1, -1].axis('off')
+plt.tight_layout()
+plt.savefig(os.path.join(
+    SAVE_PATH, 'histogram_realset_bias_corr_coniferous_v_deciduous.png'), dpi=300)
 # %%
 """
 Scatter plot for selected variables for AE_RTM_corr
@@ -517,8 +558,79 @@ with open(os.path.join(SAVE_PATH, 'mean_std_realset_vars_corr.txt'), 'w') as f:
             mean.append(df_filtered[f'latent_{attr}'].mean())
             std.append(df_filtered[f'latent_{attr}'].std())
         f.write(f"{species} & {mean[0]:.2f} $\\pm$ {std[0]:.2f} & {mean[1]:.2f} $\\pm$ {std[1]:.2f} & {mean[2]:.2f} $\\pm$ {std[2]:.2f} & {mean[3]:.2f} $\\pm$ {std[3]:.2f} & {mean[4]:.2f} $\\pm$ {std[4]:.2f} & {mean[5]:.2f} $\\pm$ {std[5]:.2f} & {mean[6]:.2f} $\\pm$ {std[6]:.2f} \\\\ \n")
+#%% 
+"""
+Calculate the Jeffreys-Matusita (JM) distance for species pairs based on the estimated variables of each species
+JM distance is a measure of the similarity between two distributions
+The JM distance is calculated as follows:
+JM = sqrt(2*(1 - exp(-D^2/2)))
+where D is the Bhattacharyya distance
+D = -ln(sum(sqrt(p(x)*q(x))))
+where p(x) and q(x) are the probability density functions of the two distributions
+"""
+# Assuming df2 is your DataFrame, rtm_paras holds parameters, and SAVE_PATH is defined
+ATTRS = list(rtm_paras.keys())
+df = df2
 
+species_list = coniferous + deciduous  # Combine your species lists
+means = {}  # Dictionary to store mean vectors
+covariances = {}  # Dictionary to store covariance matrices
 
+# Calculate means and covariances
+for species in species_list:
+    df_filtered = df[df['class'] == species]
+    mean = df_filtered[[f'latent_{attr}' for attr in ATTRS]].mean().to_numpy()
+    covariance = df_filtered[[f'latent_{attr}' for attr in ATTRS]].cov().to_numpy()
+    means[species] = mean
+    covariances[species] = covariance
+
+# Bhattacharyya distance function
+def bhattacharyya_distance(mean1, cov1, mean2, cov2):
+    cov_mean = (cov1 + cov2) / 2
+    term1 = 0.125 * np.dot(np.dot((mean1 - mean2).T, np.linalg.inv(cov_mean)), (mean1 - mean2))
+    term2 = 0.5 * np.log(np.linalg.det(cov_mean) / np.sqrt(np.linalg.det(cov1) * np.linalg.det(cov2)))
+    return term1 + term2
+
+# Jeffreys-Matusita distance function
+def jeffreys_matusita_distance(b_distance):
+    return 2 * (1 - np.exp(-b_distance))
+
+# Calculating pairwise distances
+jm_distances = pd.DataFrame(np.zeros((len(species_list), len(species_list))), index=species_list, columns=species_list)
+
+for i, species1 in enumerate(species_list):
+    for j, species2 in enumerate(species_list[i+1:], start=i+1):
+        b_distance = bhattacharyya_distance(means[species1], covariances[species1], means[species2], covariances[species2])
+        jm_distance = jeffreys_matusita_distance(b_distance)
+        jm_distances.at[species1, species2] = jm_distance
+        jm_distances.at[species2, species1] = jm_distance
+# Now jm_distances contains the pairwise Jeffreys-Matusita distances
+# You can save this to a file, or directly print it
+# print(jm_distances)
+plt.figure(figsize=(12.5, 11))
+ax = sns.heatmap(jm_distances, annot=True, cmap='viridis', vmin=0, vmax=2, 
+            annot_kws={"size": 16})
+# set the size of ticks and colorbar
+fontsize = 19
+plt.tick_params(axis='both', which='major', labelsize=fontsize)
+# set the label size of the colorbar
+cbar = ax.collections[0].colorbar
+cbar.ax.tick_params(labelsize=fontsize)
+# color the first five ticks in red and the last seven in blue
+for i, label in enumerate(ax.get_yticklabels()):
+    if i < 5:
+        label.set_color('red')
+    else:
+        label.set_color('blue')
+for i, label in enumerate(ax.get_xticklabels()):
+    if i < 5:
+        label.set_color('red')
+    else:
+        label.set_color('blue')
+# save the heatmap
+plt.tight_layout()
+plt.savefig(os.path.join(SAVE_PATH, 'heatmap_jm_distance_realset_species_corr.png'), dpi=300)
+plt.show()
 # %% NEW plot the time series of the mean and show the std as error bars for AE_RTM_corr
 fig, axs = plt.subplots(3, 4, figsize=(28, 15))
 S2_BANDS = ['B02_BLUE', 'B03_GREEN', 'B04_RED', 'B05_RE1', 'B06_RE2',
@@ -550,7 +662,7 @@ for i, band in enumerate(S2_BANDS):
     ax.tick_params(axis='both', which='major', labelsize=10)
 axs[-1, -1].axis('off')
 plt.tight_layout()
-# plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_bias_corr_coniferous_v_deciduous.png'))
+plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_bias_corr_coniferous_v_deciduous.png'))
 
 # %% 
 # Plot the spectral signature of the input and output bands for AE_RTM_corr with mean and std as error bars
