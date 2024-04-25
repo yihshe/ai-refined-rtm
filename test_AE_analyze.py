@@ -60,10 +60,6 @@ def main(config):
     else:
         ATTRS = ['N', 'cab', 'cw', 'cm', 'LAI', 'LAIu', 'fc', 'cd', 'h']
 
-    condition = None
-    if config['arch']['type'] in ['AE_RTM_con', 'AE_RTM_corr_con']:
-        condition = ['species_idx','group_idx', 'sin_date','cos_date']
-
     analyzer = {}
     rtm = RTM()
     S2_FULL_BANDS = ['B01', 'B02_BLUE', 'B03_GREEN', 'B04_RED',
@@ -82,17 +78,8 @@ def main(config):
             # TODO change the input and target keys
             data = data_dict[data_key].to(device)
             target = data_dict[target_key].to(device)
-            if condition is not None:
-                conditions = {
-                    key: data_dict[key].to(device) for key in condition
-                }
-                output = model(data, **conditions)
-                latent = model.infer(data, **conditions)
-            else:
-                output = model(data)
-                latent = model.encode(data)
-                # NOTE the following line is for AE_RTM_corr or AE_RTM_corr_con
-                # output = model.correct(model.decode(latent))
+            output = model(data)
+            latent = model.encode(data)
 
             # calcualte the corrected bias if the model is AE_RTM_corr
             if config['arch']['type'] in ['AE_RTM_corr', 'AE_RTM_corr_con']:

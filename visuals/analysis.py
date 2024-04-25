@@ -97,30 +97,30 @@ fig, axs = plt.subplots(2,4, figsize = (25, 10))
 for i, attr in enumerate(ATTRS):
     ax=axs[i//4, i % 4]
     # ax = axs[i]
-    # sns.histplot(
-    #     df1[f'latent_{attr}'].values,
-    #     bins=NUM_BINS,
-    #     ax=ax,
-    #     color='red',
-    #     label='AE_RTM',
-    #     alpha=0.5,
-    # )
     sns.histplot(
-        df3[f'latent_{attr}'].values,
+        df1[f'latent_{attr}'].values,
         bins=NUM_BINS,
         ax=ax,
         color='red',
-        label='NNRegressor',
+        label='w/o correction',
         alpha=0.5,
     )
     # sns.histplot(
-    #     df2[f'latent_{attr}'].values,
+    #     df3[f'latent_{attr}'].values,
     #     bins=NUM_BINS,
     #     ax=ax,
-    #     color='blue',
-    #     label='AE_RTM_corr',
-    #     alpha=0.6,
+    #     color='red',
+    #     label='NNRegressor',
+    #     alpha=0.5,
     # )
+    sns.histplot(
+        df2[f'latent_{attr}'].values,
+        bins=NUM_BINS,
+        ax=ax,
+        color='blue',
+        label='w/ correction',
+        alpha=0.5,
+    )
     # change the fontsize of the x and y ticks
     ax.tick_params(axis='both', which='major', labelsize=25)
     # set the range of x axis as the physical range of the variable
@@ -130,12 +130,12 @@ for i, attr in enumerate(ATTRS):
     ax.set_ylabel('Frequency', fontsize=fontsize)
     # set the distance between the y label and the y axis
     ax.yaxis.labelpad = 10
-    # ax.legend(fontsize=22)
+    ax.legend(fontsize=22)
 # remove the last subplot
 axs[-1, -1].axis('off')
 plt.tight_layout()
 plt.savefig(os.path.join(
-    SAVE_PATH, 'histogram_realset_vars_NN.png'), dpi=300)
+    SAVE_PATH, 'histogram_realset_vars_ae_rtm_corr_v_wocorr.png'), dpi=300)
 plt.show()
 
 # %%
@@ -271,10 +271,11 @@ for i, band in enumerate(S2_BANDS):
     # change the fontsize of the x and y ticks
     ax.tick_params(axis='both', which='major', labelsize=25)
     fontsize = 30
-    ax.set_xlabel(S2_names[band], fontsize=fontsize)
+    ax.set_xlabel('Bias', fontsize=fontsize)
     # set 0 as the middle of the x axis by getting the maximum absolute value of the bias
     ax.set_xlim(-np.max(np.abs(df2[f'bias_{band}'])), np.max(np.abs(df2[f'bias_{band}'])))
     ax.set_ylabel('Frequency', fontsize=fontsize)
+    ax.set_title(S2_names[band], fontsize=fontsize)
     ax.yaxis.labelpad = 10
     # ax.legend(fontsize=fontsize)
 axs[-1, -1].axis('off')
@@ -308,10 +309,11 @@ for i, band in enumerate(S2_BANDS):
     # change the fontsize of the x and y ticks
     ax.tick_params(axis='both', which='major', labelsize=25)
     fontsize = 30
-    ax.set_xlabel(S2_names[band], fontsize=fontsize)
+    ax.set_xlabel('Bias', fontsize=fontsize)
     ax.set_xlim(-np.max(np.abs(df2[f'bias_{band}'])), np.max(np.abs(df2[f'bias_{band}'])))
     ax.set_ylabel('Frequency', fontsize=fontsize)
     ax.yaxis.labelpad = 10
+    ax.set_title(S2_names[band], fontsize=fontsize)
     ax.legend(fontsize=22)
 axs[-1, -1].axis('off')
 plt.tight_layout()
@@ -505,12 +507,14 @@ Plot for VanillaAE, AE_RTM, AE_RTM_corr, NNRegressor
 ATTRS2 = rtm_paras.keys()
 # ATTRS2 = ['N', 'cab', 'LAIu', 'fc']
 # ATTRS2 = ['LAIu', 'fc']
-fig, axs = plt.subplots(2, 4, figsize=(35, 12)) 
+# fig, axs = plt.subplots(2, 4, figsize=(35, 12)) 
+fig, axs = plt.subplots(4, 2, figsize=(20, 20)) 
 # fig, axs = plt.subplots(1, 4, figsize=(30, 5))
 # fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 df = df3
 for i, attr in enumerate(ATTRS2):
-    ax = axs[i//4, i % 4]
+    # ax = axs[i//4, i % 4]
+    ax = axs[i//2, i % 2]
     # ax = axs[i]
     # get the time seris of mean and std of the clustered samples for each variable
     mean_coniferous = []
@@ -537,13 +541,13 @@ for i, attr in enumerate(ATTRS2):
     ax.set_ylabel(attr, fontsize=fontsize)
     # set the range of y axis as the physical range of the variable
     ax.set_ylim(rtm_paras[attr]['min'], rtm_paras[attr]['max'])
-    ax.legend(fontsize=25)
-    ax.tick_params(axis='both', which='major', labelsize=25)
+    ax.legend(fontsize=23)
+    ax.tick_params(axis='both', which='major', labelsize=23)
     # rotate the ticks
     ax.set_xticklabels(dates_plot, rotation=-45)  
 axs[-1, -1].axis('off')
 plt.tight_layout()
-plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_vars_nn_coniferous_v_deciduous.png'))
+plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_vars_nn_coniferous_v_deciduous_4x2.png'))
 plt.show()
 
 # %% NEW randomly select five samples and plot the time series of the mean and show the std as error bars for AE_RTM_corr
