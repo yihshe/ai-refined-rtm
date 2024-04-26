@@ -23,6 +23,11 @@ class Mogi():
             y (Tensor): y-coordinate of stations (1D tensor)
             nu (float): poisson's ratio for medium (default 0.25)
             mu (float): shear modulus for medium (Pa) (default 4e9)
+
+        TODO:
+            - Bound range of parameters to learn
+            - Locations of stations
+            - Function to generate synthetic data
         """
         self.x = x
         self.y = y
@@ -33,7 +38,7 @@ class Mogi():
         Converts cartesian coordinates to polar coordinates
         
         Parameters:
-            x (Tensor): x-coordinate (m) TODO m or mm?
+            x (Tensor): x-coordinate (m) 
             y (Tensor): y-coordinate (m)
             
         Returns:
@@ -86,7 +91,7 @@ class Mogi():
         # Compute radial distance from source
         R = torch.sqrt(d.unsqueeze(1)**2 + rho**2) # radial distance from source
 
-        # Mogi displacement calculation TODO dV or dP? use mu or not? rad is not considered
+        # Mogi displacement calculation 
         C = ((1-self.nu) / torch.pi) * dV.unsqueeze(1)
         ur = C * rho / R**3 # horizontal displacement, m
         uz = C * d.unsqueeze(1) / R**3 # vertical displacement, m
