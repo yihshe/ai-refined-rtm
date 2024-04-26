@@ -13,7 +13,7 @@ class Mogi():
     parameters : array
         names for the parameters in the model
     """
-    def __init__(self, x, y, nu=0.25, mu=4e9):
+    def __init__(self, x, y, nu=0.25):
         super(Mogi, self).__init__()
         """
         Initialize the Mogi model with default parameters.
@@ -27,7 +27,6 @@ class Mogi():
         self.x = x
         self.y = y
         self.nu = nu
-        self.mu = mu
 
     def cart2pol(self, x, y):
         """
@@ -61,7 +60,7 @@ class Mogi():
         y = r * torch.sin(theta)
         return x, y
     
-    def forward(self, xcen, ycen, d, rad, dV, dP):
+    def forward(self, xcen, ycen, d, dV):
         """
         Function to run the forward model of Mogi (1958) for batched data.
         3d displacement field on surface from point source (Mogi, 1958).
@@ -70,9 +69,7 @@ class Mogi():
             xcen (Tensor): x-offset of point source epicenter (m)
             ycen (Tensor): y-offset of point source epicenter (m)
             d (Tensor): depth to point (m)
-            rad (Tensor): chamber radius (m)
             dV (Tensor): change in volume (m^3)
-            dP (Tensor): change in pressure (Pa)
         
         Returns:
             ux (Tensor) : displacements in east in meters.
