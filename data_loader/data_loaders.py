@@ -1,6 +1,7 @@
 from torchvision import datasets, transforms
 from base import BaseDataLoader
 from datasets.spectrumS2 import SpectrumS2, SyntheticS2
+from datasets.displacementGPS import DisplacementGPS
 import numpy as np
 import torch
 
@@ -42,4 +43,14 @@ class SyntheticS2DataLoader(BaseDataLoader):
     def __init__(self, data_dir, batch_size, shuffle=True, validation_split=0.0, num_workers=1):
         self.data_dir = data_dir
         self.dataset = SyntheticS2(self.data_dir)
+        super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers)
+
+class GPSDataLoader(BaseDataLoader):
+    """
+    GPS data loading demo using BaseDataLoader
+    """
+
+    def __init__(self, data_dir, batch_size, shuffle=True, validation_split=0.0, num_workers=1):
+        self.data_dir = data_dir
+        self.dataset = DisplacementGPS(self.data_dir)
         super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers)

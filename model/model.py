@@ -183,3 +183,4 @@ class NNRegressor(BaseModel):
         # so far it is only "train" thus the output is a scale factor
         x = self.encode(x)
         return x
+    
