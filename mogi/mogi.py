@@ -98,4 +98,5 @@ class Mogi():
 
         ux, uy = self.pol2cart(th, ur)
 
-        return ux, uy, uz
+        # concatenate the displacement fields horizontally
+        return torch.cat((ux, uy, uz), dim=1)

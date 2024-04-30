@@ -38,6 +38,7 @@ for i, (xE, yN, zV) in enumerate(zip(
         'yN': yN,
         'zV': zV
     }
+#%%
 # save station_dict to a json file
 with open(path.join(BASE_PATH, 'data/mogi/station_info.json'), 'w') as f:
     json.dump(station_dict, f, indent=2)

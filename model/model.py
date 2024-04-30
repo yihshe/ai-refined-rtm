@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import json
 from base import BaseModel
 from rtm_torch.rtm import RTM
+from mogi.mogi import Mogi
 
 class VanillaAE(BaseModel):
     """
@@ -184,3 +185,95 @@ class NNRegressor(BaseModel):
         x = self.encode(x)
         return x
     
+class AE_Mogi(BaseModel):
+    """
+    Vanilla AutoEncoder (AE) with Mogi as the decoder
+    input -> encoder (learnable) -> decoder (INFORM) -> output
+    """
+
+    def __init__(self, input_dim, hidden_dim, mogi_paras, station_info, 
+                 standardization):
+        super().__init__()
+        self.input_dim = input_dim # 36
+        self.hidden_dim = hidden_dim # 5
+        # The encoder is learnable neural networks
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, hidden_dim),
+            nn.Sigmoid(),
+        )
+        # 
+        # The decoder is the INFORM RTM with fixed parameters
+        self.station_info = json.load(open(station_info))
+        x = torch.tensor([station_info[k]['xE'] for k in station_info.keys()])*1000 # m
+        y = torch.tensor([station_info[k]['yN'] for k in station_info.keys()])*1000 # m
+        self.decoder = Mogi(x, y)
+    
+        self.mogi_paras = json.load(open(mogi_paras))
+        assert hidden_dim == len(
+            self.mogi_paras), "hidden_dim must be equal to the number of Mogi parameters"
+        # Mean and scale for standardization of model input
+        self.device = self.device = torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu')
+        self.x_mean = torch.tensor(
+            np.load(standardization['x_mean'])).float().unsqueeze(0).to(self.device)
+        self.x_scale = torch.tensor(
+            np.load(standardization['x_scale'])).float().unsqueeze(0).to(self.device)
+
+    #  define encode function to further process the output of encoder
+    def encode(self, x):
+        x = self.encoder(x)
+        para_dict = {}
+        for i, para_name in enumerate(self.mogi_paras.keys()):
+            min = self.mogi_paras[para_name]['min']
+            max = self.mogi_paras[para_name]['max']
+            if para_name in ['xcen', 'ycen', 'd']:
+                para_dict[para_name] = (x[:, i]*(max-min)+min)*1000 # m
+            elif para_name =='dV_factor':
+                para_dict[para_name] = x[:, i]*(max-min)+min
+            elif para_name == 'dV_power':
+                para_dict[para_name] = torch.pow(10, x[:, i]*(max-min)+min)
+        para_dict['dV'] = para_dict['dV_factor']*para_dict['dV_power'] # m^3
+        
+        return para_dict
+
+    #  define decode function to further process the output of decoder
+    def decode(self, para_dict):
+        output = self.decoder(para_dict['xcen'], para_dict['ycen'], 
+                              para_dict['d'], para_dict['dV'])
+        return (output-self.x_mean)/self.x_scale
+
+    def forward(self, x):
+        para_dict = self.encode(x)
+        x = self.decode(para_dict)
+        return x
+    
+class AE_Mogi_corr(AE_Mogi):
+    """
+    Vanilla AutoEncoder (AE) with Mogi as the decoder and additional layers for correction
+    input -> encoder (learnable) -> decoder (Mogi) -> correction -> output
+    """
+
+    def __init__(self, input_dim, hidden_dim, mogi_paras, station_info,
+                 standardization):
+        super().__init__(input_dim, hidden_dim, mogi_paras, station_info, 
+                         standardization)
+        self.correction = nn.Sequential(
+            nn.Linear(len(input_dim), 4*len(input_dim)),
+            nn.ReLU(),
+            nn.Linear(4*len(input_dim), len(input_dim)),
+        )
+
+    def correct(self, x):
+        return self.correction(x)
+
+    def forward(self, x):
+        x = self.encode(x)
+        x = self.decode(x)
+        x = self.correct(x)
+        return x
