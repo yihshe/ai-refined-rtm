@@ -52,6 +52,7 @@ for i, displacement in enumerate(['ux', 'uy', 'uz']):
         df = pd.DataFrame(data, columns=columns)
     else:
         df[columns] = pd.DataFrame(data)
+#%%
 # add the timeline to the dataframe
 df['date'] = timeline
 # save the dataframe to a csv file
@@ -68,3 +69,15 @@ for station_name in station_names:
         ax[i].set_xlabel('Date')
         ax[i].set_ylabel('Displacement (m)')
 
+#%%
+# Plot the histogram for each displacement of the first station
+for station_name in station_names:
+    fig, ax = plt.subplots(3, 1, figsize=(12, 15))
+    # station_name = station_names[0]
+    for i, displacement in enumerate(['ux', 'uy', 'uz']):
+        ax[i].hist(df[f'{displacement}_{station_name}'], bins=100)
+        ax[i].set_title(f'{displacement} for station {station_name}')
+        ax[i].set_xlabel('Displacement (m)')
+        ax[i].set_ylabel('Frequency')
+
+#%% 
