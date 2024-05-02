@@ -210,8 +210,8 @@ class AE_Mogi(BaseModel):
         # 
         # The decoder is the INFORM RTM with fixed parameters
         self.station_info = json.load(open(station_info))
-        x = torch.tensor([station_info[k]['xE'] for k in station_info.keys()])*1000 # m
-        y = torch.tensor([station_info[k]['yN'] for k in station_info.keys()])*1000 # m
+        x = torch.tensor([self.station_info[k]['xE'] for k in self.station_info.keys()])*1000 # m
+        y = torch.tensor([self.station_info[k]['yN'] for k in self.station_info.keys()])*1000 # m
         self.decoder = Mogi(x, y)
     
         self.mogi_paras = json.load(open(mogi_paras))
@@ -232,21 +232,21 @@ class AE_Mogi(BaseModel):
         for i, para_name in enumerate(self.mogi_paras.keys()):
             min = self.mogi_paras[para_name]['min']
             max = self.mogi_paras[para_name]['max']
+            para_dict[para_name] = x[:, i]*(max-min)+min
             if para_name in ['xcen', 'ycen', 'd']:
-                para_dict[para_name] = (x[:, i]*(max-min)+min)*1000 # m
-            elif para_name =='dV_factor':
-                para_dict[para_name] = x[:, i]*(max-min)+min
-            elif para_name == 'dV_power':
-                para_dict[para_name] = torch.pow(10, x[:, i]*(max-min)+min)
-        para_dict['dV'] = para_dict['dV_factor']*para_dict['dV_power'] # m^3
+                para_dict[para_name] = para_dict[para_name]*1000
+
+        para_dict['dV'] = para_dict['dV_factor']*torch.pow(10, para_dict['dV_power']) # m^3
         
         return para_dict
 
     #  define decode function to further process the output of decoder
     def decode(self, para_dict):
-        output = self.decoder(para_dict['xcen'], para_dict['ycen'], 
+        # output in mm, same as the input
+        output = self.decoder.run(para_dict['xcen'], para_dict['ycen'], 
                               para_dict['d'], para_dict['dV'])
         return (output-self.x_mean)/self.x_scale
+        # return output
 
     def forward(self, x):
         para_dict = self.encode(x)
@@ -264,9 +264,9 @@ class AE_Mogi_corr(AE_Mogi):
         super().__init__(input_dim, hidden_dim, mogi_paras, station_info, 
                          standardization)
         self.correction = nn.Sequential(
-            nn.Linear(len(input_dim), 4*len(input_dim)),
+            nn.Linear(input_dim, 4*input_dim),
             nn.ReLU(),
-            nn.Linear(4*len(input_dim), len(input_dim)),
+            nn.Linear(4*input_dim, input_dim),
         )
 
     def correct(self, x):

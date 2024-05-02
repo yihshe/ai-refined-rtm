@@ -844,4 +844,5 @@ ax.set_yticklabels(ATTRS1, fontsize=16)
 plt.tight_layout()
 plt.savefig(os.path.join(SAVE_PATH, 'heatmap_correlaton_realset_vars_vanilla_v_corr.png'))
 
-# %%
+# %% plot the histogram of the six latent variables
+

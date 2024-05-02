@@ -14,10 +14,11 @@ class DisplacementGPS(data.Dataset):
     
     def __getitem__(self, index):
         sample = self.data_df.iloc[index]
-        # TODO tbc other attributes of the data sample e.g. time step
-        displacements = torch.tensor(
-            sample.values.astype('float32')
+        data_dict = {}
+        data_dict['displacement'] = torch.tensor(
+            sample[:-1].values.astype('float32')
         ).to(torch.float32)
+        data_dict['date'] = sample[-1]
 
-        return {'displacements': displacements}
+        return data_dict
     

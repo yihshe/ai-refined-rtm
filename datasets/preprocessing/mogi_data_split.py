@@ -9,7 +9,7 @@ from sklearn import preprocessing
 BASE_DIR = '/maps/ys611/ai-refined-rtm/'
 DATA_DIR = os.path.join(BASE_DIR, 'data/mogi/ts_filled_ICA9comp.csv')
 
-SAVE_DIR = os.path.join(BASE_DIR, 'data/mogi')
+SAVE_DIR = os.path.join(BASE_DIR, 'data/mogi/')
 SAVE_DIR_TRAIN = os.path.join(SAVE_DIR, 'train.csv')
 SAVE_DIR_VALID = os.path.join(SAVE_DIR, 'valid.csv')
 SAVE_DIR_TEST = os.path.join(SAVE_DIR, 'test.csv')
@@ -24,13 +24,13 @@ data = pd.read_csv(DATA_DIR)
 train_valid, test = train_test_split(
     data, test_size=SPLIT_RATIO, random_state=42, shuffle=False)
 train, valid = train_test_split(
-    train_valid, test_size=SPLIT_RATIO, random_state=42, shuffle=False)
+    train_valid, test_size=SPLIT_RATIO, random_state=42, shuffle=True)
 
 #%% standardize the dataset
-scaler = preprocessing.StandardScaler().fit(train.iloc[:, :-1])
-train.iloc[:, :-1] = scaler.transform(train.iloc[:, :-1])
-valid.iloc[:, :-1] = scaler.transform(valid.iloc[:, :-1])
-test.iloc[:, :-1] = scaler.transform(test.iloc[:, :-1])
+scaler = preprocessing.StandardScaler().fit(train.iloc[:, :36])
+train.iloc[:, :36] = scaler.transform(train.iloc[:, :36])
+valid.iloc[:, :36] = scaler.transform(valid.iloc[:, :36])
+test.iloc[:, :36] = scaler.transform(test.iloc[:, :36])
 
 #%% save the train, valid, and test sets
 train.to_csv(SAVE_DIR_TRAIN, index=False)

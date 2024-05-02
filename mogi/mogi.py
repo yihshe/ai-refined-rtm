@@ -65,7 +65,7 @@ class Mogi():
         y = r * torch.sin(theta)
         return x, y
     
-    def forward(self, xcen, ycen, d, dV):
+    def run(self, xcen, ycen, d, dV):
         """
         Function to run the forward model of Mogi (1958) for batched data.
         3d displacement field on surface from point source (Mogi, 1958).
@@ -80,6 +80,7 @@ class Mogi():
             ux (Tensor) : displacements in east in meters.
             uy (Tensor) : displacements in north in meters.
             uz (Tensor) : displacements in vertical in meters.
+            output (Tensor) : concatenated displacements in east, north, vertical in millimeters.
         """
         # Center coordinate grid on point source
         x_adjusted = self.x - xcen.unsqueeze(1)
@@ -98,5 +99,7 @@ class Mogi():
 
         ux, uy = self.pol2cart(th, ur)
 
+        output = torch.cat((ux, uy, uz), dim=1)*1e3 # convert to mm
+
         # concatenate the displacement fields horizontally
-        return torch.cat((ux, uy, uz), dim=1)
+        return output

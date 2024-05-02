@@ -9,12 +9,11 @@ import matplotlib.pyplot as plt
 #%%
 BASE_PATH = '/maps/ys611/ai-refined-rtm/'
 file = h5py.File(path.join(BASE_PATH, 'data/mogi/ts_filled_ICA9comp.mat'))
+
 #%%
 # load the time series data, 6525*36, 6525 time steps, 12*3 observations at each step
 ts = file['Xd_filled']['ts'][()]
 timeline = file['Xd_filled']['timeline'][()]
-
-#%%
 # load the name for each displacement
 name_refs = file['Xd_filled']['name'][()][0]
 name_strs = []
@@ -54,8 +53,33 @@ for i, displacement in enumerate(['ux', 'uy', 'uz']):
     else:
         df[columns] = pd.DataFrame(data)
 #%%
-# add the timeline to the dataframe
-df['date'] = timeline
+# function to encode the date into sin and cos
+def encode_dates(df):
+    # Convert to pandas datetime
+    dates = pd.to_datetime(df['date'], format='%Y.%m.%d')
+    # Get day of the year
+    df['day_of_year'] = dates.dt.dayofyear
+    max_day_of_year = 366
+    # Cyclical transformation
+    df['sin_date'] = np.sin(2 * np.pi * df['day_of_year'] / max_day_of_year)
+    df['cos_date'] = np.cos(2 * np.pi * df['day_of_year'] / max_day_of_year)
+    df = df.drop(columns='day_of_year')
+    return df
+#%%
+# function to convert the decimal date to a string date
+def decimal_to_date(decimal_date):
+    year = int(decimal_date)
+    remainder = decimal_date - year
+    base = pd.Timestamp(year, 1, 1)
+    date = base + pd.Timedelta(days=int(remainder*365))
+    return date.strftime('%Y.%m.%d')
+#%%
+# convert the timeline to a list of string dates and add it to the dataframe
+df['date'] = [decimal_to_date(decimal_date) for decimal_date in timeline]
+# encode the date into sin and cos
+df = encode_dates(df)
+
+#%%
 # save the dataframe to a csv file
 df.to_csv(path.join(BASE_PATH, 'data/mogi/ts_filled_ICA9comp.csv'), index=False)
 
