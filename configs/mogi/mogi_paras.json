@@ -16,7 +16,7 @@
         "max": 1
     },
     "dV_power": {
-        "min": 0,
+        "min": 5,
         "max": 8
     }
 }

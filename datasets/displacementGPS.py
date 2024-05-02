@@ -16,9 +16,9 @@ class DisplacementGPS(data.Dataset):
         sample = self.data_df.iloc[index]
         data_dict = {}
         data_dict['displacement'] = torch.tensor(
-            sample[:-1].values.astype('float32')
+            sample[:36].values.astype('float32')
         ).to(torch.float32)
-        data_dict['date'] = sample[-1]
+        data_dict['date'] = sample[-3]
 
         return data_dict
     

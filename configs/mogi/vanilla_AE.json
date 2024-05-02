@@ -11,14 +11,14 @@
     "data_loader": {
         "type": "GPSDataLoader",
         "args": {
-            "data_dir": "/maps/ys611/ai-refined-rtm/data/mogi/shuffled_only/train.csv",
+            "data_dir": "/maps/ys611/ai-refined-rtm/data/mogi/train.csv",
             "batch_size": 64,
             "shuffle": true,
             "validation_split": 0.0,
             "num_workers": 2
         },
-        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/mogi/shuffled_only/valid.csv",
-        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/mogi/shuffled_only/test.csv"
+        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/mogi/valid.csv",
+        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/mogi/test.csv"
     },
     "optimizer": {
         "type": "Adam",

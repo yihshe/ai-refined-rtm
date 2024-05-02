@@ -245,8 +245,9 @@ class AE_Mogi(BaseModel):
         # output in mm, same as the input
         output = self.decoder.run(para_dict['xcen'], para_dict['ycen'], 
                               para_dict['d'], para_dict['dV'])
-        return (output-self.x_mean)/self.x_scale
-        # return output
+        # return (output-self.x_mean)/self.x_scale
+        # NOTE assuming output = output_original-self.x_mean
+        return output/self.x_scale
 
     def forward(self, x):
         para_dict = self.encode(x)
