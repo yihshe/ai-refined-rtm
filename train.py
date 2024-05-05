@@ -33,6 +33,7 @@ def main(config):
         # training=False,
         num_workers=2
     )
+    
 
     # build model architecture, then print to console
     model = config.init_obj('arch', module_arch)

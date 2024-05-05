@@ -6,6 +6,8 @@ import json
 from base import BaseModel
 from rtm_torch.rtm import RTM
 from mogi.mogi import Mogi
+from utils.util import MemoryBank
+
 
 class VanillaAE(BaseModel):
     """
@@ -109,7 +111,7 @@ class AE_RTM(BaseModel):
             para_dict[para_name] = x[:, i]*(max-min)+min
         assert 'fc' in para_dict.keys(), "fc must be included in the rtm_paras"
         # calculate cd from sd and fc
-        SD = 500 
+        SD = 500
         para_dict['cd'] = torch.sqrt(
             (para_dict['fc']*10000)/(torch.pi*SD))*2
         para_dict['h'] = torch.exp(
@@ -184,18 +186,19 @@ class NNRegressor(BaseModel):
         # so far it is only "train" thus the output is a scale factor
         x = self.encode(x)
         return x
-    
+
+
 class AE_Mogi(BaseModel):
     """
     Vanilla AutoEncoder (AE) with Mogi as the decoder
     input -> encoder (learnable) -> decoder (INFORM) -> output
     """
 
-    def __init__(self, input_dim, hidden_dim, mogi_paras, station_info, 
+    def __init__(self, input_dim, hidden_dim, mogi_paras, station_info,
                  standardization):
         super().__init__()
-        self.input_dim = input_dim # 36
-        self.hidden_dim = hidden_dim # 5
+        self.input_dim = input_dim  # 36
+        self.hidden_dim = hidden_dim  # 5
         # The encoder is learnable neural networks
         self.encoder = nn.Sequential(
             nn.Linear(input_dim, 64),
@@ -207,13 +210,15 @@ class AE_Mogi(BaseModel):
             nn.Linear(16, hidden_dim),
             nn.Sigmoid(),
         )
-        # 
+        #
         # The decoder is the INFORM RTM with fixed parameters
         self.station_info = json.load(open(station_info))
-        x = torch.tensor([self.station_info[k]['xE'] for k in self.station_info.keys()])*1000 # m
-        y = torch.tensor([self.station_info[k]['yN'] for k in self.station_info.keys()])*1000 # m
+        x = torch.tensor([self.station_info[k]['xE']
+                         for k in self.station_info.keys()])*1000  # m
+        y = torch.tensor([self.station_info[k]['yN']
+                         for k in self.station_info.keys()])*1000  # m
         self.decoder = Mogi(x, y)
-    
+
         self.mogi_paras = json.load(open(mogi_paras))
         assert hidden_dim == len(
             self.mogi_paras), "hidden_dim must be equal to the number of Mogi parameters"
@@ -228,32 +233,55 @@ class AE_Mogi(BaseModel):
     #  define encode function to further process the output of encoder
     def encode(self, x):
         x = self.encoder(x)
+        return x
+
+    def transform(self, x):
+        """
+        Transform the output of encoder to the physical parameters
+        """
         para_dict = {}
         for i, para_name in enumerate(self.mogi_paras.keys()):
             min = self.mogi_paras[para_name]['min']
             max = self.mogi_paras[para_name]['max']
-            para_dict[para_name] = x[:, i]*(max-min)+min
+            # if x shape is (batch, sequence, feature), then x[:,:,i] is the i-th feature
+            if len(x.shape) == 3:
+                para_dict[para_name] = x[:, :, i]*(max-min)+min
+            else:
+                para_dict[para_name] = x[:, i]*(max-min)+min
             if para_name in ['xcen', 'ycen', 'd']:
                 para_dict[para_name] = para_dict[para_name]*1000
 
-        para_dict['dV'] = para_dict['dV_factor']*torch.pow(10, para_dict['dV_power']) # m^3
-        
+        # para_dict['dV'] = para_dict['dV_factor'] * \
+        #     torch.pow(10, para_dict['dV_power'])  # m^3
+        para_dict['dV'] = para_dict['dV'] * \
+            torch.pow(10, torch.tensor(5)) - torch.pow(10, torch.tensor(7))
+
         return para_dict
 
     #  define decode function to further process the output of decoder
     def decode(self, para_dict):
-        # output in mm, same as the input
-        output = self.decoder.run(para_dict['xcen'], para_dict['ycen'], 
-                              para_dict['d'], para_dict['dV'])
-        # return (output-self.x_mean)/self.x_scale
-        # NOTE assuming output = output_original-self.x_mean
-        return output/self.x_scale
+        # if within a batch, the input is a sequence, then iterate over sequence
+        # and the output shape should be (batch, sequence, feature)
+        if len(para_dict['xcen'].shape) == 2:
+            output = torch.stack(
+                [self.decoder.run(
+                    para_dict['xcen'][i], para_dict['ycen'][i],
+                    para_dict['d'][i], para_dict['dV'][i]
+                ) for i in range(para_dict['xcen'].shape[0])]
+            )
+        else:
+            # output in mm, same as the input
+            output = self.decoder.run(para_dict['xcen'], para_dict['ycen'],
+                                      para_dict['d'], para_dict['dV'])
+        # NOTE scaling the output with mean and scale helps the model to learn better
+        return (output-self.x_mean)/self.x_scale
 
     def forward(self, x):
         para_dict = self.encode(x)
         x = self.decode(para_dict)
         return x
-    
+
+
 class AE_Mogi_corr(AE_Mogi):
     """
     Vanilla AutoEncoder (AE) with Mogi as the decoder and additional layers for correction
@@ -262,7 +290,7 @@ class AE_Mogi_corr(AE_Mogi):
 
     def __init__(self, input_dim, hidden_dim, mogi_paras, station_info,
                  standardization):
-        super().__init__(input_dim, hidden_dim, mogi_paras, station_info, 
+        super().__init__(input_dim, hidden_dim, mogi_paras, station_info,
                          standardization)
         self.correction = nn.Sequential(
             nn.Linear(input_dim, 4*input_dim),
@@ -273,8 +301,14 @@ class AE_Mogi_corr(AE_Mogi):
     def correct(self, x):
         return self.correction(x)
 
+    # def forward(self, x):
+    #     x = self.encode(x)
+    #     x = self.decode(x)
+    #     x = self.correct(x)
+    #     return x
     def forward(self, x):
-        x = self.encode(x)
-        x = self.decode(x)
-        x = self.correct(x)
-        return x
+        x0 = self.encode(x)
+        x1 = self.transform(x0)
+        x2 = self.decode(x1)
+        x3 = self.correct(x2)
+        return x0, x1, x2, x3

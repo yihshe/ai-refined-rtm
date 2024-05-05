@@ -5,26 +5,27 @@
         "type": "AE_Mogi_corr",
         "args": {
             "input_dim": 36,
-            "hidden_dim": 5,
+            "hidden_dim": 4,
             "mogi_paras": "/maps/ys611/ai-refined-rtm/configs/mogi/mogi_paras.json",
             "station_info": "/maps/ys611/ai-refined-rtm/configs/mogi/station_info.json",
             "standardization": {
-                "x_mean": "/maps/ys611/ai-refined-rtm/data/mogi/train_x_mean.npy",
-                "x_scale": "/maps/ys611/ai-refined-rtm/data/mogi/train_x_scale.npy"
+                "x_mean": "/maps/ys611/ai-refined-rtm/data/mogi/seq/train_x_mean.npy",
+                "x_scale": "/maps/ys611/ai-refined-rtm/data/mogi/seq/train_x_scale.npy"
             }
         }
     },
     "data_loader": {
-        "type": "GPSDataLoader",
+        "type": "GPSSeqDataLoader",
+        "type_test": "GPSDataLoader",
         "args": {
-            "data_dir": "/maps/ys611/ai-refined-rtm/data/mogi/train.csv",
-            "batch_size": 64,
+            "data_dir": "/maps/ys611/ai-refined-rtm/data/mogi/seq/train.csv",
+            "batch_size": 6,
             "shuffle": true,
             "validation_split": 0.0,
             "num_workers": 2
         },
-        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/mogi/valid.csv",
-        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/mogi/test.csv"
+        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/mogi/seq/valid.csv",
+        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/mogi/seq/train.csv"
     },
     "optimizer": {
         "type": "Adam",
@@ -34,7 +35,8 @@
             "amsgrad": true
         }
     },
-    "loss": "mse_loss",
+    "loss": "mse_loss_mogi_reg",
+    "loss_test": "mse_loss",
     "metrics": [],
     "lr_scheduler": {
         "type": "StepLR",
@@ -54,6 +56,7 @@
         "output_key": "displacement",
         "stablize_grad": true,
         "tensorboard": false,
-        "wandb": false
+        "wandb": false,
+        "memory_bank": true
     }
 }

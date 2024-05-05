@@ -65,3 +65,21 @@ class MetricTracker:
 
     def result(self):
         return dict(self._data.average)
+
+# define a memory bank for regularization
+class MemoryBank:
+    def __init__(self):
+        self.memory = None
+
+    def update(self, data, beta=0.9):
+        if self.memory is None:
+            self.memory = data
+        else:
+            # self.memory = torch.cat([self.memory, data], dim=0)
+            self.memory = beta * self.memory + (1 - beta) * data
+
+    def get(self):
+        return self.memory
+
+    def clear(self):
+        self.memory = None 

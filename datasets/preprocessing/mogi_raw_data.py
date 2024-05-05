@@ -39,8 +39,8 @@ for i, (xE, yN, zV) in enumerate(zip(
     }
 #%%
 # save station_dict to a json file
-with open(path.join(BASE_PATH, 'data/mogi/station_info.json'), 'w') as f:
-    json.dump(station_dict, f, indent=2)
+# with open(path.join(BASE_PATH, 'data/mogi/station_info.json'), 'w') as f:
+#     json.dump(station_dict, f, indent=2)
 
 #%%
 # save the data to a csv file 
@@ -74,14 +74,15 @@ def decimal_to_date(decimal_date):
     date = base + pd.Timedelta(days=int(remainder*365))
     return date.strftime('%Y.%m.%d')
 #%%
-# convert the timeline to a list of string dates and add it to the dataframe
-df['date'] = [decimal_to_date(decimal_date) for decimal_date in timeline]
-# encode the date into sin and cos
-df = encode_dates(df)
+# # convert the timeline to a list of string dates and add it to the dataframe
+# df['date'] = [decimal_to_date(decimal_date) for decimal_date in timeline]
+# # encode the date into sin and cos
+# df = encode_dates(df)
+df['date'] = timeline
 
 #%%
 # save the dataframe to a csv file
-df.to_csv(path.join(BASE_PATH, 'data/mogi/ts_filled_ICA9comp.csv'), index=False)
+# df.to_csv(path.join(BASE_PATH, 'data/mogi/ts_filled_ICA9comp.csv'), index=False)
 
 #%%
 # Plot the time series data for each displacement of the first station
@@ -89,7 +90,11 @@ for station_name in station_names:
     fig, ax = plt.subplots(3, 1, figsize=(12, 15))
     # station_name = station_names[0]
     for i, displacement in enumerate(['ux', 'uy', 'uz']):
-        ax[i].plot(df['date'], df[f'{displacement}_{station_name}'])
+        # scatter plot with fitted line
+        ax[i].scatter(df['date'], df[f'{displacement}_{station_name}'], s=20, alpha=0.5)
+        # plot the moving average of the displacement with red line
+        ax[i].plot(df['date'], df[f'{displacement}_{station_name}'].rolling(window=365).mean(), color='red')
+        # ax[i].plot(df['date'], df[f'{displacement}_{station_name}'])
         ax[i].set_title(f'{displacement} for station {station_name}')
         ax[i].set_xlabel('Date')
         ax[i].set_ylabel('Displacement (m)')

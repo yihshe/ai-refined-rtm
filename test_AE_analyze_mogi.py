@@ -17,7 +17,7 @@ def main(config):
 
     # setup data_loader instances
     # NOTE the test set needs to be set beforehand e.g. in dataset.py
-    data_loader = getattr(module_data, config['data_loader']['type'])(
+    data_loader = getattr(module_data, config['data_loader']['type_test'])(
         config['data_loader']['data_dir_test'],
         batch_size=512,
         shuffle=False,
@@ -31,7 +31,7 @@ def main(config):
     logger.info(model)
 
     # get function handles of loss and metrics
-    loss_fn = getattr(module_loss, config['loss'])
+    loss_fn = getattr(module_loss, config['loss_test'])
     metric_fns = [getattr(module_metric, met) for met in config['metrics']]
 
     logger.info('Loading checkpoint: {} ...'.format(config.resume))
@@ -53,11 +53,12 @@ def main(config):
     target_key = config['trainer']['output_key']
 
     # analyze the reconstruction loss per band
-    if config['arch']['type']=='VanillaAE':
+    if config['arch']['type'] == 'VanillaAE':
         # ATTRS = ['1', '2', '3', '4', '5']
         ATTRS = [str(i+1) for i in range(config['arch']['args']['hidden_dim'])]
     else:
-        ATTRS = ['xcen', 'ycen', 'd', 'dV_factor', 'dV_power', 'dV']
+        # ATTRS = ['xcen', 'ycen', 'd', 'dV_factor', 'dV_power', 'dV']
+        ATTRS = ['xcen', 'ycen', 'd', 'dV']
 
     analyzer = {}
     mogi = RTM()
@@ -74,27 +75,35 @@ def main(config):
         for batch_idx, data_dict in enumerate(data_loader):
             data = data_dict[data_key].to(device)
             target = data_dict[target_key].to(device)
-            output = model(data)
-            latent = model.encode(data)
+            if config['arch']['type'] in ['AE_Mogi_corr']:
+                outputs = model(data)
+                output = outputs[-1]
+                init_output = outputs[-2]
+                bias = output - init_output
+                latent = outputs[1]
+            else:
+                output = model(data)
+                latent = model.encode(data)
 
             # calcualte the corrected bias if the model is AE_RTM_corr
             if config['arch']['type'] in ['AE_Mogi_corr']:
                 # calculate the direct output from RTM
-                init_output = model.decode(latent)
-                
-                # calculate the bias 
+                # output, init_output = model.decode(latent)
+
+                # calculate the bias
                 # NOTE bias in original scale = bias*SCALE if the data is scaled
-                bias = output - init_output
+                # bias = output - init_output
                 data_concat(analyzer, 'init_output', init_output)
                 data_concat(analyzer, 'bias', bias)
 
-            if config['arch']['type']=='VanillaAE':
-                assert len(ATTRS) == latent.shape[1], "latent shape does not match"
+            if config['arch']['type'] == 'VanillaAE':
+                assert len(
+                    ATTRS) == latent.shape[1], "latent shape does not match"
             else:
                 assert ATTRS == list(latent.keys()), "latent keys do not match"
                 # latent is a dictionary of parameters, convert it to a tensor
                 latent = torch.stack([latent[k] for k in latent.keys()], dim=1)
-            
+
             # l2_per_band = torch.square(output-target)
             data_concat(analyzer, 'output', output)
             data_concat(analyzer, 'target', target)
@@ -166,6 +175,6 @@ if __name__ == '__main__':
                       help='path to latest checkpoint (default: None)')
     args.add_argument('-d', '--device', default=None, type=str,
                       help='indices of GPUs to enable (default: all)')
-   
+
     config = ConfigParser.from_args(args)
     main(config)
