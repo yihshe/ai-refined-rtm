@@ -47,11 +47,6 @@ class Trainer(BaseTrainer):
         self.stablize_grad = config['trainer']['stablize_grad']
         self.stablize_count = 0
 
-        self.memoty_bank = None
-        if config['arch']['type'] == 'AE_Mogi_corr':
-            if config['trainer']['memory_bank'] == True:
-                self.memory_bank = MemoryBank()
-
     def _train_epoch(self, epoch):
         """
         Training logic for an epoch
@@ -67,10 +62,7 @@ class Trainer(BaseTrainer):
             target = data_dict[self.target_key].to(self.device)
             self.optimizer.zero_grad()
             output = self.model(data)
-            if self.memory_bank is not None:
-                loss = self.criterion(output, target, self.memory_bank)
-            else:
-                loss = self.criterion(output, target)
+            loss = self.criterion(output, target)
             loss.backward()
             # statblize the gradient if RTM is used
             if self.stablize_grad:

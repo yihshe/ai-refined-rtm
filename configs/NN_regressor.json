@@ -12,7 +12,7 @@
         "type": "SyntheticS2DataLoader",
         "args": {
             "data_dir": "/maps/ys611/ai-refined-rtm/data/synthetic/20240124/train.csv",
-            "batch_size": 64,
+            "batch_size": 6,
             "shuffle": true,
             "validation_split": 0.0,
             "num_workers": 2

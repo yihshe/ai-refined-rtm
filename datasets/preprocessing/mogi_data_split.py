@@ -12,7 +12,7 @@ import json
 BASE_DIR = '/maps/ys611/ai-refined-rtm/'
 DATA_DIR = os.path.join(BASE_DIR, 'data/mogi/ts_filled_ICA9comp.csv')
 
-SAVE_DIR = os.path.join(BASE_DIR, 'data/mogi/seq')
+SAVE_DIR = os.path.join(BASE_DIR, 'data/mogi/')
 SAVE_DIR_TRAIN = os.path.join(SAVE_DIR, 'train.csv')
 SAVE_DIR_VALID = os.path.join(SAVE_DIR, 'valid.csv')
 SAVE_DIR_TEST = os.path.join(SAVE_DIR, 'test.csv')
@@ -26,13 +26,17 @@ data = pd.read_csv(DATA_DIR)
 station_info = json.load(open('/maps/ys611/ai-refined-rtm/configs/mogi/station_info.json'))
 
 #%% split the data into train, valid, and test sets
-train_valid, test = train_test_split(
-    data, test_size=SPLIT_RATIO, random_state=42, shuffle=False)
-# train, valid = train_test_split(
-#     train_valid, test_size=SPLIT_RATIO, random_state=42, shuffle=False)
-valid, train = train_test_split(
-    train_valid, test_size=1-SPLIT_RATIO+0.05, random_state=42, shuffle=False)
+# train_valid, test = train_test_split(
+#     data, test_size=SPLIT_RATIO, random_state=42, shuffle=False)
+# # train, valid = train_test_split(
+# #     train_valid, test_size=SPLIT_RATIO, random_state=42, shuffle=False)
+# valid, train = train_test_split(
+#     train_valid, test_size=1-SPLIT_RATIO+0.05, random_state=42, shuffle=False)
 
+test, train_valid = train_test_split(
+    data, test_size=0.8, random_state=42, shuffle=False)
+train, valid = train_test_split(
+    train_valid, test_size=0.15, random_state=42, shuffle=False)
 #%% standardize the dataset
 scaler = preprocessing.StandardScaler().fit(train.iloc[:, :36])
 train.iloc[:, :36] = scaler.transform(train.iloc[:, :36])

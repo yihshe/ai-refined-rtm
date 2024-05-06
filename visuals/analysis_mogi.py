@@ -10,21 +10,24 @@ MEAN = np.load('/maps/ys611/ai-refined-rtm/data/mogi/train_x_mean.npy')
 SCALE = np.load('/maps/ys611/ai-refined-rtm/data/mogi/train_x_scale.npy')
 mogi_paras = json.load(open(
     '/maps/ys611/ai-refined-rtm/configs/mogi/mogi_paras.json'))
+ATTRS = list(mogi_paras.keys())
 station_info = json.load(open(
     '/maps/ys611/ai-refined-rtm/configs/mogi/station_info.json'))
+STATIONS = list(station_info.keys())
+DIRECTIONS = ['ux', 'uy', 'uz']
 GPS = []
-for direction in ['ux', 'uy', 'uz']:
-    for station in station_info.keys():
+for direction in DIRECTIONS:
+    for station in STATIONS:
         GPS.append(f'{direction}_{station}')
 # %%
-# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0503_093049_reg1e-2'
-# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0503_093622_reg1e-1'
-BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0505_161157_std_loss'
+BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0506_163645'
 
 k = 'train'
 CSV_PATH0 = os.path.join(
     BASE_PATH, f'model_best_testset_analyzer_{k}.csv'
 )
+
+# CSV_PATH0=f'/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0505_190334_seq5_noverlap_weightdecay1e-3/mobel_best_testset_analyzer_{k}.csv'
 df0 = pd.read_csv(CSV_PATH0)
 
 SAVE_PATH = os.path.join(BASE_PATH, f'plots_{k}')

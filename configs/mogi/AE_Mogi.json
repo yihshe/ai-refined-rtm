@@ -9,22 +9,22 @@
             "mogi_paras": "/maps/ys611/ai-refined-rtm/configs/mogi/mogi_paras.json",
             "station_info": "/maps/ys611/ai-refined-rtm/configs/mogi/station_info.json",
             "standardization": {
-                "x_mean": "/maps/ys611/ai-refined-rtm/data/mogi/train_x_mean.npy",
-                "x_scale": "/maps/ys611/ai-refined-rtm/data/mogi/train_x_scale.npy"
+                "x_mean": "/maps/ys611/ai-refined-rtm/data/mogi/seq/train_x_mean.npy",
+                "x_scale": "/maps/ys611/ai-refined-rtm/data/mogi/seq/train_x_scale.npy"
             }
         }
     },
     "data_loader": {
         "type": "GPSDataLoader",
         "args": {
-            "data_dir": "/maps/ys611/ai-refined-rtm/data/mogi/train.csv",
+            "data_dir": "/maps/ys611/ai-refined-rtm/data/mogi/seq/train.csv",
             "batch_size": 64,
             "shuffle": true,
             "validation_split": 0.0,
             "num_workers": 2
         },
-        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/mogi/valid.csv",
-        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/mogi/test.csv"
+        "data_dir_valid": "/maps/ys611/ai-refined-rtm/data/mogi/seq/valid.csv",
+        "data_dir_test": "/maps/ys611/ai-refined-rtm/data/mogi/seq/test.csv"
     },
     "optimizer": {
         "type": "Adam",

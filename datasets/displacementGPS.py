@@ -28,7 +28,7 @@ class DisplacementGPS(data.Dataset):
 
 
 class DisplacementGPSSeq(data.Dataset):
-    def __init__(self, csv_path, seq_len=14, step_size=7):
+    def __init__(self, csv_path, seq_len=5, step_size=5):
         super(DisplacementGPSSeq, self).__init__()
         self.seq_len = seq_len
         self.step_size = step_size
