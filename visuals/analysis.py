@@ -482,7 +482,7 @@ for i, band in enumerate(S2_BANDS):
     # set the distance between y label and y axis
     ax.yaxis.labelpad = 10
     ax.set_aspect('equal')
-    # make sure both axes have save ticks to display
+    # make sure both axes have same ticks to display
     ax.locator_params(axis='x', nbins=4)
     ax.locator_params(axis='y', nbins=4)
     # make sure all ticks are rounded to 2 decimal places
