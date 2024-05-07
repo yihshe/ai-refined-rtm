@@ -43,7 +43,7 @@ def recale_output(df, mean, scale):
 # %%
 BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0506_163645'
 
-k = 'valid'
+k = 'test'
 CSV_PATH0 = os.path.join(
     BASE_PATH, f'model_best_testset_analyzer_{k}.csv'
 )
@@ -252,7 +252,7 @@ for direction in ['ux', 'uy', 'uz']:
         for tick in ax.get_xticklabels():
             tick.set_rotation(-30)
     plt.tight_layout()
-    # plt.savefig(os.path.join(
-    #     SAVE_PATH, f'{direction}_target_v_mogioutput_gps_date.png'))
+    plt.savefig(os.path.join(
+        SAVE_PATH, f'{direction}_target_v_mogioutput_gps_date.png'))
     plt.show()
 # %%
