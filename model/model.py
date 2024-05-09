@@ -231,7 +231,8 @@ class AE_Mogi(BaseModel):
             np.load(standardization['x_scale'])).float().unsqueeze(0).to(self.device)
 
     #  define encode function to further process the output of encoder
-    def encode(self, x):
+    def encode(self, x, sin, cos):
+        # x = torch.cat((x, sin, cos), dim=1)
         x = self.encoder(x)
         return x
 
@@ -276,10 +277,16 @@ class AE_Mogi(BaseModel):
         # NOTE scaling the output with mean and scale helps the model to learn better
         return (output-self.x_mean)/self.x_scale
 
-    def forward(self, x):
-        para_dict = self.encode(x)
-        x = self.decode(para_dict)
-        return x
+    # def forward(self, x):
+    #     para_dict = self.encode(x)
+    #     x = self.decode(para_dict)
+    #     return x
+
+    def forward(self, x, sin, cos):
+        x0 = self.encode(x, sin, cos)
+        x1 = self.transform(x0)
+        x2 = self.decode(x1)
+        return x0, x1, x2
 
 
 class AE_Mogi_corr(AE_Mogi):
@@ -298,7 +305,8 @@ class AE_Mogi_corr(AE_Mogi):
             nn.Linear(4*input_dim, input_dim),
         )
 
-    def correct(self, x):
+    def correct(self, x, sin, cos):
+        # x = torch.cat((x, sin, cos), dim=1)
         return self.correction(x)
 
     # def forward(self, x):
@@ -306,9 +314,10 @@ class AE_Mogi_corr(AE_Mogi):
     #     x = self.decode(x)
     #     x = self.correct(x)
     #     return x
-    def forward(self, x):
-        x0 = self.encode(x)
+    def forward(self, x, sin, cos):
+        x0 = self.encode(x, sin, cos)
         x1 = self.transform(x0)
         x2 = self.decode(x1)
-        x3 = self.correct(x2)
+        x3 = self.correct(x2, sin, cos)
         return x0, x1, x2, x3
+        # return x3

@@ -10,6 +10,7 @@
     },
     "data_loader": {
         "type": "GPSDataLoader",
+        "type_test": "GPSDataLoader",
         "args": {
             "data_dir": "/maps/ys611/ai-refined-rtm/data/mogi/train.csv",
             "batch_size": 64,
@@ -29,6 +30,7 @@
         }
     },
     "loss": "mse_loss",
+    "loss_test": "mse_loss",
     "metrics": [],
     "lr_scheduler": {
         "type": "StepLR",

@@ -75,13 +75,16 @@ def main(config):
         for batch_idx, data_dict in enumerate(data_loader):
             data = data_dict[data_key].to(device)
             target = data_dict[target_key].to(device)
-            if config['arch']['type'] in ['AE_Mogi_corr']:
-                outputs = model(data)
+            sin = data_dict['sin_date'].to(device)
+            cos = data_dict['cos_date'].to(device)
+            if config['arch']['type'] in ['AE_Mogi', 'AE_Mogi_corr']:
+                outputs = model(data, sin, cos)
                 output = outputs[-1]
-                init_output = outputs[-2]
-                bias = output - init_output
                 latent = outputs[1]
-            else:
+                if config['arch']['type'] == 'AE_Mogi_corr':
+                    init_output = outputs[2]
+                    bias = output - init_output
+            elif config['arch']['type'] == 'VanillaAE':
                 output = model(data)
                 latent = model.encode(data)
 

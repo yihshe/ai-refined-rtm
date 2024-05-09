@@ -21,12 +21,14 @@ class DisplacementGPS(data.Dataset):
             sample[:36].values.astype('float32')
         ).to(torch.float32)
         data_dict['date'] = sample[-3]
+        for k in ['sin_date', 'cos_date']:
+            data_dict[k] = torch.tensor(
+                sample[k].astype('float32')
+            ).to(torch.float32).unsqueeze(0)
 
         return data_dict
 
 # dataset by slicing data into sequences
-
-
 class DisplacementGPSSeq(data.Dataset):
     def __init__(self, csv_path, seq_len=5, step_size=5):
         super(DisplacementGPSSeq, self).__init__()

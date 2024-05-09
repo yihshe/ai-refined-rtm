@@ -15,15 +15,18 @@ def mse_loss_per_channel(output, target):
     with torch.no_grad():
         return torch.mean(torch.square(output - target), dim=0)
 
+def mse_loss_mogi(output, target):
+    final_output = output[-1]
+    return F.mse_loss(final_output, target)
 
 def mse_loss_mogi_reg(output, target, alpha=1e-2):
-    corrected_output = output[-1]
-    mogi_output = output[-2]
-    mse_loss = F.mse_loss(corrected_output, target)
+    final_output = output[-1]
+    mogi_output = output[2]
+    mse_loss = F.mse_loss(final_output, target)
     # reg_loss = lambda_reg * F.mse_loss(mogi_output, torch.zeros_like(mogi_output))
     # return mse_loss + reg_loss
 
-    smoothness_reg = smoothness_loss(output[-2])
+    smoothness_reg = smoothness_loss(mogi_output)
 
     latents = output[0]
     # regularize the predictions of xcen, ycen, and d so that they are roughly constant through out different batches and sequences
@@ -40,8 +43,9 @@ def mse_loss_mogi_reg(output, target, alpha=1e-2):
     d_var = torch.var(d)
     consistency_reg = xcen_var + ycen_var + d_var
 
-    total_loss = mse_loss + alpha * smoothness_reg + alpha*consistency_reg
-    # total_loss = mse_loss + 10*alpha*consistency_reg
+    # total_loss = mse_loss + alpha * smoothness_reg + alpha*consistency_reg
+    total_loss = mse_loss + alpha * smoothness_reg # NOTE this loss seems sufficient for the model to learn the latent variables
+    # total_loss = mse_loss
     return total_loss
 
 

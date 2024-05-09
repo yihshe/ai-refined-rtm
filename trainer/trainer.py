@@ -60,8 +60,10 @@ class Trainer(BaseTrainer):
         for batch_idx, data_dict in enumerate(self.data_loader):
             data = data_dict[self.data_key].to(self.device)
             target = data_dict[self.target_key].to(self.device)
+            sin = data_dict['sin_date'].to(self.device)
+            cos = data_dict['cos_date'].to(self.device)
             self.optimizer.zero_grad()
-            output = self.model(data)
+            output = self.model(data, sin, cos)
             loss = self.criterion(output, target)
             loss.backward()
             # statblize the gradient if RTM is used
@@ -155,8 +157,9 @@ class Trainer(BaseTrainer):
             for batch_idx, data_dict in enumerate(self.valid_data_loader):
                 data = data_dict[self.data_key].to(self.device)
                 target = data_dict[self.target_key].to(self.device)
-
-                output = self.model(data)
+                sin = data_dict['sin_date'].to(self.device)
+                cos = data_dict['cos_date'].to(self.device)
+                output = self.model(data, sin, cos)
                 loss = self.criterion(output, target)
 
                 # # track the validation loss per band and log to wandb

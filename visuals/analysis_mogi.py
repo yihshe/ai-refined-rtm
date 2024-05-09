@@ -41,9 +41,10 @@ def recale_output(df, mean, scale):
     return df
 
 # %%
-BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0506_163645'
+BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0508_224402_mse_only'
+# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi/0508_152157'
 
-k = 'test'
+k = 'train'
 CSV_PATH0 = os.path.join(
     BASE_PATH, f'model_best_testset_analyzer_{k}.csv'
 )
