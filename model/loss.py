@@ -23,29 +23,10 @@ def mse_loss_mogi_reg(output, target, alpha=1e-2):
     final_output = output[-1]
     mogi_output = output[2]
     mse_loss = F.mse_loss(final_output, target)
-    # reg_loss = lambda_reg * F.mse_loss(mogi_output, torch.zeros_like(mogi_output))
-    # return mse_loss + reg_loss
 
     smoothness_reg = smoothness_loss(mogi_output)
 
-    latents = output[0]
-    # regularize the predictions of xcen, ycen, and d so that they are roughly constant through out different batches and sequences
-    # xcen = latents[:, :, 0]
-    # ycen = latents[:, :, 1]
-    # d = latents[:, :, 2]
-    xcen = latents[:, 0]
-    ycen = latents[:, 1]
-    d = latents[:, 2]
-
-    # # calculate the variance for the mogi location across batch and sequences
-    xcen_var = torch.var(xcen)
-    ycen_var = torch.var(ycen)
-    d_var = torch.var(d)
-    consistency_reg = xcen_var + ycen_var + d_var
-
-    # total_loss = mse_loss + alpha * smoothness_reg + alpha*consistency_reg
-    total_loss = mse_loss + alpha * smoothness_reg # NOTE this loss seems sufficient for the model to learn the latent variables
-    # total_loss = mse_loss
+    total_loss = mse_loss + alpha * smoothness_reg 
     return total_loss
 
 

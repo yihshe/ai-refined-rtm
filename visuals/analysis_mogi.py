@@ -27,24 +27,26 @@ for direction in DIRECTIONS:
     for station in STATIONS:
         GPS.append(f'{direction}_{station}')
 # rescale the output to the original scale
-def recale_output(df, mean, scale):
+def recale_output(df, mean, scale, corr=True):
     for attr in ['xcen', 'ycen', 'd']:
         df[f'latent_{attr}'] = df[f'latent_{attr}'] / 1000 # scale back to km
     for attr in ['dV']:
         df[f'latent_{attr}'] = df[f'latent_{attr}'] / np.power(10, 6) # scale back to 10^6 m^3
     for i, gps in enumerate(GPS):
-        df[f'init_output_{gps}'] = df[f'init_output_{gps}'] * scale[i] + mean[i]
         df[f'output_{gps}'] = df[f'output_{gps}'] * scale[i] + mean[i]
         df[f'target_{gps}'] = df[f'target_{gps}'] * scale[i] + mean[i]
-        df[f'bias_{gps}'] = df[f'bias_{gps}'] * scale[i]
+        if corr:
+            df[f'init_output_{gps}'] = df[f'init_output_{gps}'] * scale[i] + mean[i]
+            df[f'bias_{gps}'] = df[f'bias_{gps}'] * scale[i]
     df['date'] = pd.to_datetime(df['date'], format='%Y.%m.%d')
     return df
 
 # %%
-BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0508_224402_mse_only'
-# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi/0508_152157'
+BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0509_102619_smooth'
+# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0509_103248_wosmooth'
+# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi/0509_103601_smooth'
 
-k = 'train'
+k = 'valid'
 CSV_PATH0 = os.path.join(
     BASE_PATH, f'model_best_testset_analyzer_{k}.csv'
 )

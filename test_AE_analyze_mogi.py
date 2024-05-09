@@ -75,10 +75,8 @@ def main(config):
         for batch_idx, data_dict in enumerate(data_loader):
             data = data_dict[data_key].to(device)
             target = data_dict[target_key].to(device)
-            sin = data_dict['sin_date'].to(device)
-            cos = data_dict['cos_date'].to(device)
             if config['arch']['type'] in ['AE_Mogi', 'AE_Mogi_corr']:
-                outputs = model(data, sin, cos)
+                outputs = model(data)
                 output = outputs[-1]
                 latent = outputs[1]
                 if config['arch']['type'] == 'AE_Mogi_corr':
