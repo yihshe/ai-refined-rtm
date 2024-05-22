@@ -141,7 +141,7 @@ for i, attr in enumerate(ATTRS):
     ax.set_ylabel('Frequency', fontsize=fontsize)
     # set the distance between the y label and the y axis
     ax.yaxis.labelpad = 10
-    ax.legend(fontsize=fontsize-5)
+    # ax.legend(fontsize=fontsize-5)
 # remove the last subplot
 axs[-1, -1].axis('off')
 plt.tight_layout()
@@ -165,7 +165,7 @@ ATTRS = list(rtm_paras.keys())
 # ATTRS = ['N', 'cab', 'LAIu', 'fc']
 # ATTRS = ['N', 'fc']
 # create one figure and plot both variable predictions of different models as a subplot
-fig, axs = plt.subplots(2, 4, figsize=(25, 10))
+fig, axs = plt.subplots(2, 4, figsize=(26, 10))
 # fig, axs = plt.subplots(1, 4, figsize=(25, 5))
 # fig, axs = plt.subplots(1, 2, figsize=(12.5, 5))
 for i, attr in enumerate(ATTRS):
@@ -191,7 +191,7 @@ for i, attr in enumerate(ATTRS):
     # change the fontsize of the x and y ticks
     ax.tick_params(axis='both', which='major', labelsize=25)
     fontsize = 30
-    ax.set_xlabel(attr, fontsize=fontsize)
+    ax.set_xlabel(ATTRS_LATEX[attr], fontsize=fontsize)
     ax.set_xlim(rtm_paras[attr]['min'], rtm_paras[attr]['max'])
     ax.set_ylabel('Frequency', fontsize=fontsize)
     # set the distance between the y label and the y axis
@@ -209,7 +209,7 @@ Histogram of the latent variables per tree species for AE_RTM_corr
 """
 # Histogram of the latent variables for selected species 
 # Plot histogram of biophysical variables of each single species
-# TODO plot the spectral signature for each species before and after correction
+# NOTE SKIP plot the spectral signature for each species before and after correction
 for species in coniferous+deciduous:
     df_filtered = df2[df2['class']==species]
     # Histogram of the latent variables of selected species
@@ -322,7 +322,7 @@ for i, band in enumerate(S2_BANDS):
     # change the fontsize of the x and y ticks
     ax.tick_params(axis='both', which='major', labelsize=25)
     fontsize = 30
-    ax.set_xlabel('Bias', fontsize=fontsize)
+    ax.set_xlabel('Corrected Bias', fontsize=fontsize)
     ax.set_xlim(-np.max(np.abs(df2[f'bias_{band}'])), np.max(np.abs(df2[f'bias_{band}'])))
     ax.set_ylabel('Frequency', fontsize=fontsize)
     ax.yaxis.labelpad = 10
@@ -370,8 +370,8 @@ for i, attr1 in enumerate(ATTRS2):
         fontsize = 22
         # set the distance between the title and the plot
         # ax.set_title(f'{attr1} v. {attr2}', fontsize=fontsize, pad=10)
-        ax.set_xlabel(attr1, fontsize=fontsize)
-        ax.set_ylabel(attr2, fontsize=fontsize)
+        ax.set_xlabel(ATTRS_LATEX[attr1], fontsize=fontsize)
+        ax.set_ylabel(ATTRS_LATEX[attr2], fontsize=fontsize)
         # set the same ticks for both x and y axes
         ax.tick_params(axis='both', which='major', labelsize=16)
 
@@ -382,22 +382,22 @@ plt.savefig(os.path.join(SAVE_PATH, 'scatter_realset_vars_pairs_corr.png'))
 Scatter plot for variable pairs distinguishing Coniferous and Diceduous 
 for VanillaAE, and AE_RTM_corr
 """
-# fig, axs = plt.subplots(7, 6, figsize=(25, 25))
+fig, axs = plt.subplots(7, 6, figsize=(25, 25))
 # drop the last two elements in ATTRS (cd and h)
 # ATTRS2 = ATTRS_VANILLA
-# ATTRS1 = rtm_paras.keys()
-fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-ATTRS1 = ['LAI']
-ATTRS2 = ['cab', 'cw', 'LAIu']
+ATTRS1 = rtm_paras.keys()
+# fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+# ATTRS1 = ['LAI']
+# ATTRS2 = ['cab', 'cw', 'LAIu']
 df = df3
 df_coniferous = df[df['class'].isin(coniferous)]
 df_deciduous = df[df['class'].isin(deciduous)]
 for i, attr1 in enumerate(ATTRS1):
     # drop the attr in ATTRS2 that is the same as attr1
-    # ATTRS2 = [attr for attr in rtm_paras.keys() if attr != attr1]
+    ATTRS2 = [attr for attr in rtm_paras.keys() if attr != attr1]
     for j, attr2 in enumerate(ATTRS2):
-        # ax = axs[i, j]
-        ax = axs[j]
+        ax = axs[i, j]
+        # ax = axs[j]
         sns.scatterplot(x=f'latent_{attr1}', y=f'latent_{attr2}',
                         data=df_coniferous, ax=ax, s=8, alpha=0.5, color='red')
         sns.scatterplot(x=f'latent_{attr1}', y=f'latent_{attr2}',
@@ -414,13 +414,13 @@ for i, attr1 in enumerate(ATTRS1):
         # ax.legend(fontsize=15)
 
 plt.tight_layout()
-# plt.savefig(os.path.join(
-#     SAVE_PATH, 'scatter_realset_vars_pairs_corr_coniferous_v_deciduous.png'))
 plt.savefig(os.path.join(
-    SAVE_PATH, 'scatter_realset_vars_pairs_nn_coniferous_v_deciduous_3_LAI.png'))
+    SAVE_PATH, 'scatter_realset_vars_pairs_nn_coniferous_v_deciduous.png'))
+# plt.savefig(os.path.join(
+#     SAVE_PATH, 'scatter_realset_vars_pairs_nn_coniferous_v_deciduous_3_LAI.png'))
 plt.show()
 
-#%% NEW scatter plot for bias pairs for AE_RTM_corr
+#%% SKIP NEW scatter plot for bias pairs for AE_RTM_corr
 fig, axs = plt.subplots(11, 11, figsize=(35, 35))
 for i, band1 in enumerate(S2_BANDS):
     for j, band2 in enumerate(S2_BANDS):
@@ -462,6 +462,7 @@ plt.savefig(os.path.join(
 """
 Scatter plot of input and reconstruction bands
 Plot for VanillaAE, AE_RTM, AE_RTM_corr NOTE neurips 2 bands compared
+TODO until here 2024.05.21 tmw resume from here. copy and paste and create a new plot
 """
 # Scatter plot of the input and reconstructed bands
 # fig, axs = plt.subplots(3, 4, figsize=(24, 16))
@@ -526,6 +527,62 @@ plt.tight_layout()
 plt.savefig(os.path.join(SAVE_PATH, 'linescatter_realset_bands_corr_v_wocorr_target_v_output.png'))
 plt.show()
 
+# %%
+"""
+Scatter plot of input and reconstruction bands
+Plot for VanillaAE, AE_RTM, AE_RTM_corr NOTE neurips full plots
+"""
+# Scatter plot of the input and reconstructed bands
+fig, axs = plt.subplots(3, 4, figsize=(24, 16))
+df = df3
+# color = 'blue'
+color = 'red'
+ylabel = '$X_{\mathrm{S2, D}}$' 
+for i, band in enumerate(S2_BANDS):
+    ax = axs[i//4, i % 4]
+    sns.scatterplot(x='target_'+band, y='output_'+band, data=df, ax=ax,
+                    s=8, alpha=0.5, color=color, label=label)
+    # adjust the point size and alpha and color
+    # calculate RMSE and add it to the title
+    # rmse = np.sqrt(np.mean((df[f'target_{band}'] - df[f'output_{band}'])**2))
+    r2 = r_square(df[f'target_{band}'], df[f'output_{band}'])
+    fontsize = 30
+    # add the RMSE to the title
+    ax.set_title(S2_names[band], fontsize=fontsize)
+    xlabel = '$X_{\mathrm{S2}}$'
+    # ylabel = '$X_{\mathrm{S2, C}}$' 
+    ax.set_xlabel(xlabel, fontsize=fontsize)
+    ax.set_ylabel(ylabel, fontsize=fontsize)
+    # set the same ticks for both x and y axes
+    ax.tick_params(axis='both', which='major', labelsize=25)
+    # plot the diagonal line
+    limits = [
+        np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
+        np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
+    ]
+    # round the limit ticks to 2 decimal places
+    # limits = [np.round(limits[0], 2), np.round(limits[1], 2)]
+    ax.plot(limits, limits, 'k-', alpha=0.75, zorder=0)
+    ax.set_xlim(limits)
+    ax.set_ylim(limits)
+    # set the distance between y label and y axis
+    ax.yaxis.labelpad = 10
+    ax.set_aspect('equal')
+    # make sure both axes have same ticks to display
+    ax.locator_params(axis='x', nbins=4)
+    ax.locator_params(axis='y', nbins=4)
+    # make sure all ticks are rounded to 2 decimal places
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.2f}'.format(x)))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.2f}'.format(x)))
+    # set RMSE as a legend
+    # ax.legend([f'RMSE: {rmse:.3f}'], fontsize=24)
+    ax.legend([f'$R^2$: {r2:.3f}'], fontsize=24)
+# make the last subplot empty
+axs[-1, -1].axis('off')
+plt.tight_layout()
+plt.savefig(os.path.join(SAVE_PATH, 'linescatter_realset_bands_nn_target_v_output.png'))
+plt.show()
+
 # %% NOTE neurips changed
 """
 For each variable, cluster the sample according to forest type and then
@@ -538,15 +595,15 @@ ATTRS2 = rtm_paras.keys()
 # ATTRS2 = ['N', 'cab', 'LAIu', 'fc']
 # ATTRS2 = ['LAIu', 'fc']
 # fig, axs = plt.subplots(2, 4, figsize=(35, 12)) 
-# fig, axs = plt.subplots(4, 2, figsize=(20, 20)) 
+fig, axs = plt.subplots(4, 2, figsize=(20, 20)) 
 # fig, axs = plt.subplots(1, 4, figsize=(30, 5))
-fig, axs = plt.subplots(1, 3, figsize=(30, 5))
-df = df2
-# for i, attr in enumerate(ATTRS2):
-for i, attr in enumerate(['LAI', 'LAIu', 'fc']):
+# fig, axs = plt.subplots(1, 3, figsize=(30, 5))
+df = df3
+for i, attr in enumerate(ATTRS2):
+# for i, attr in enumerate(['LAI', 'LAIu', 'fc']):
     # ax = axs[i//4, i % 4]
-    # ax = axs[i//2, i % 2]
-    ax = axs[i]
+    ax = axs[i//2, i % 2]
+    # ax = axs[i]
     # get the time seris of mean and std of the clustered samples for each variable
     mean_coniferous = []
     std_coniferous = []
@@ -578,9 +635,9 @@ for i, attr in enumerate(['LAI', 'LAIu', 'fc']):
     # rotate the ticks
     ax.set_xticklabels(dates_plot, rotation=-45)  
 
-# axs[-1, -1].axis('off')
+axs[-1, -1].axis('off')
 plt.tight_layout()
-plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_vars_corr_coniferous_v_deciduous_3.png'))
+plt.savefig(os.path.join(SAVE_PATH, 'timeseries_realset_vars_nn_coniferous_v_deciduous.png'))
 plt.show()
 
 # %% NEW randomly select five samples and plot the time series of the mean and show the std as error bars for AE_RTM_corr
@@ -799,10 +856,12 @@ for i, forest_type in enumerate([coniferous, deciduous]):
    
 # %% Spectral signature per species
 df = df2
-fig, axs = plt.subplots(6, 2, figsize=(22, 30))
+# fig, axs = plt.subplots(6, 2, figsize=(22, 30))
+fig, axs = plt.subplots(4, 3, figsize=(33, 20))
 # each subplot for comparing the spectral signature of the input and output bands for a single species
 for i, species in enumerate(coniferous+deciduous):
-    ax = axs[i//2, i % 2]
+    # ax = axs[i//2, i % 2]
+    ax = axs[i//3, i % 3]
     # get the time seris of mean and std of the clustered samples for each variable
     mean_input = []
     std_input = []
@@ -814,16 +873,16 @@ for i, species in enumerate(coniferous+deciduous):
         mean_output.append(df[df['class']==species][f'output_{band}'].mean())
         std_output.append(df[df['class']==species][f'output_{band}'].std())
     # plot the time series of the mean and show the std as error bars
-    ax.errorbar(x=[S2_names[band] for band in S2_BANDS], y=mean_input, yerr=std_input, fmt='o', color = 'red', label='Initial Spectra')
-    ax.errorbar(x=[S2_names[band] for band in S2_BANDS], y=mean_output, yerr=std_output, fmt='o', color = 'blue', label='Corrected Spectra')
-    fontsize = 25
+    ax.errorbar(x=[S2_names[band] for band in S2_BANDS], y=mean_input, yerr=std_input, fmt='o', color = 'red', label='RTM Output')
+    ax.errorbar(x=[S2_names[band] for band in S2_BANDS], y=mean_output, yerr=std_output, fmt='o', color = 'blue', label='Corrected Output')
+    fontsize = 30
     forest_type = 'Coniferous' if species in coniferous else 'Deciduous'
     ax.set_title(f'{forest_type}: {species}', fontsize=fontsize, pad=10)
     ax.set_xlabel('Bands', fontsize=fontsize)
-    ax.set_ylabel('Spectral Signature', fontsize=fontsize)
+    ax.set_ylabel('Reflectance', fontsize=fontsize)
     ax.set_ylim(0, 0.5)
-    ax.legend(fontsize=20)
-    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.legend(fontsize=25)
+    ax.tick_params(axis='both', which='major', labelsize=25)
 plt.tight_layout()
 plt.savefig(os.path.join(SAVE_PATH, 'realset_spectral_signature_corr_init_v_final_species.png'))
 

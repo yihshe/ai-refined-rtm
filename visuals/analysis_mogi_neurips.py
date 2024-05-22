@@ -91,8 +91,15 @@ CSV_PATH1 = os.path.join(
     'model_best_testset_analyzer_test.csv'
 )
 
+# BASE_PATH = '/maps/ys611/ai-refined-rtm/saved/mogi/models/AE_Mogi_corr/0509_103248_wosmooth'
+CSV_PATH3 = os.path.join(
+    BASE_PATH, 'AE_Mogi_corr/0509_103248_wosmooth',
+    'model_best_testset_analyzer_test.csv'
+)
+
 df0 = recale_output(pd.read_csv(CSV_PATH0), MEAN, SCALE)
 df1 = recale_output(pd.read_csv(CSV_PATH1), MEAN, SCALE, corr=False) 
+df2 = recale_output(pd.read_csv(CSV_PATH3), MEAN, SCALE)
 
 SAVE_PATH = os.path.join(BASE_PATH, 'AE_Mogi_corr/0509_102619_smooth', 
                          'neurips521')
@@ -160,6 +167,52 @@ for direction in ['uz']:
         os.path.join(SAVE_PATH, f'{direction}_output_target_corr_v_wocorr.png'))
     plt.show()
 
+# %% Plot the line scatter for the output and target of each GPS
+# NOTE neurips full plot
+df = df1
+color = 'red'
+ylabel = '$X_{\mathrm{GPS, C}}$'
+for direction in ['ux', 'uy', 'uz']:
+    fig, axs = plt.subplots(3, 4, figsize=(24, 16))
+    for i, station in enumerate(station_info.keys()):
+        ax = axs[i//4, i % 4]
+        gps = f'{direction}_{station}'
+        sns.scatterplot(x='target_'+gps, y='output_'+gps, data=df, ax=ax, s=8,
+                        alpha=0.5, color=color)
+        # rmse = np.sqrt(np.mean((df[f'target_{gps}'] - df[f'output_{gps}'])**2))
+        r2 = r_square(df[f'target_{gps}'], df[f'output_{gps}'])
+        fontsize = 30
+        ax.set_title(station, fontsize=fontsize)
+        xlabel = '$X_{\mathrm{GPS}}$'
+        # ylabel = '$X_{\mathrm{GPS, B}}$'
+        ax.set_xlabel(xlabel, fontsize=fontsize)
+        ax.set_ylabel(ylabel, fontsize=fontsize)
+        # set the same ticks for both x and y axes
+        ax.tick_params(axis='both', which='major', labelsize=25)
+        # plot the diagonal line
+        limits = [
+            np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
+            np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
+        ]
+        ax.plot(limits, limits, 'k-', alpha=0.75, zorder=0)
+        ax.set_xlim(limits)
+        ax.set_ylim(limits)
+        # set the distance between y label and y axis
+        ax.yaxis.labelpad = 10
+        ax.set_aspect('equal')
+        # make sure both axes have same ticks to display
+        ax.locator_params(axis='x', nbins=4)
+        ax.locator_params(axis='y', nbins=4)
+        # make sure all ticks are rounded to 2 decimal places
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.2f}'.format(x)))
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.2f}'.format(x)))
+        # set RMSE as a legend
+        # ax.legend([f'RMSE: {rmse:.3f}'], fontsize=24)
+        ax.legend([f'$R^2$: {r2:.3f}'], fontsize=24)
+    plt.tight_layout()
+    plt.savefig(
+        os.path.join(SAVE_PATH, f'{direction}_output_target_wocorr.png'))
+    plt.show()
 
 # %% plot the histogram of the four variables
 # NOTE plot with w/o correction case
@@ -299,9 +352,11 @@ for direction in ['ux', 'uy', 'uz']:
 # %%
 # plot the scatter plot of the init_output from Mogi and target
 df = df0
-fig, axs = plt.subplots(2, 3, figsize=(30, 10))
+# fig, axs = plt.subplots(2, 3, figsize=(30, 10))
+fig, axs = plt.subplots(12, 3, figsize=(30, 60))
 for i, direction in enumerate(['ux', 'uy', 'uz']):
-    for j, station in enumerate(['AV08', 'AV12']):
+    # for j, station in enumerate(['AV08', 'AV12']):
+    for j, station in enumerate(station_info.keys()):
         ax = axs[j, i]
         # plot the background of the plot as grey for date between 2008-02-01 to 2008-07-01
         ax.axvspan(
@@ -335,8 +390,56 @@ for i, direction in enumerate(['ux', 'uy', 'uz']):
         for tick in ax.get_xticklabels():
             tick.set_rotation(-20)
 plt.tight_layout()
+# plt.savefig(os.path.join(
+#     SAVE_PATH, f'{direction}_target_v_mogioutput_gps_date_AV08_12.png'))
 plt.savefig(os.path.join(
-    SAVE_PATH, f'{direction}_target_v_mogioutput_gps_date_AV08_12.png'))
+    SAVE_PATH, 'target_v_mogioutput_gps_date.png'))
+plt.show()
+
+# %% NOTE comparing the effects of the smoothness term
+# plot the scatter plot of the init_output from Mogi and target
+# df = df0
+station = 'AV08'
+fig, axs = plt.subplots(2, 3, figsize=(30, 10))
+for i, direction in enumerate(['ux', 'uy', 'uz']):
+    # for j, station in enumerate(['AV08', 'AV12']):
+    for j, df in enumerate([df0, df2]):
+        ax = axs[j, i]
+        # plot the background of the plot as grey for date between 2008-02-01 to 2008-07-01
+        ax.axvspan(
+            INFLATION_START, INFLATION_END,
+            color='pink', alpha=0.4
+        )
+        gps = f'{direction}_{station}'
+        sns.scatterplot(
+            x='date', y=f'target_{gps}', data=df, ax=ax, s=15, alpha=0.5,
+            color='orange'
+        )
+        sns.scatterplot(
+            x='date', y=f'init_output_{gps}', data=df, ax=ax, s=15, alpha=0.5,
+            color='blue'
+        )
+        # kalman filter to fit the curve for init_output
+        smooth_init_output = kalman_filter(df[f'init_output_{gps}'].values, alpha=0.005)
+        ax.plot(df['date'], smooth_init_output, color='red', linewidth=2)
+
+        fontsize = 32
+        title  = f'{station} (w/o smoothness)' if j == 1 else f'{station} (w/ smoothness)'
+        ax.set_title(title, fontsize=fontsize)
+        ax.set_xlabel('Date', fontsize=fontsize)
+        ax.set_ylabel(dirs[direction], fontsize=fontsize)
+        ax.tick_params(axis='both', which='major', labelsize=25)
+        # set y limit same so easier for visual
+        y_min = -22 if direction == 'uz' else -12
+        y_max = 22 if direction == 'uz' else 12
+        ax.set_ylim(y_min, y_max)
+        # ax.legend(fontsize=fontsize)
+        # rotate the x-axis labels
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(-20)
+plt.tight_layout()
+plt.savefig(os.path.join(
+    SAVE_PATH, f'target_v_mogioutput_gps_date_AV08_smoothness_ablation.png'))
 plt.show()
 # %%
 # combine csvs from both train and test sets to plot the gps displacements
@@ -353,9 +456,11 @@ df= df0_full
 last_date = df0['date'].max() # 2009-07-29
 # for AV08, AV12 (each row), plot the gps displacements of 'uz' in each column
 # column 1: corrected_output v. target, column 2: init_output v. target, column 3: bias
-fig, axs = plt.subplots(2, 3, figsize=(30, 10))
-direction = 'uz'
-for i, station in enumerate(['AV08', 'AV12']):
+# fig, axs = plt.subplots(2, 3, figsize=(30, 10))
+fig, axs = plt.subplots(12, 3, figsize=(30, 60))
+direction = 'ux'
+# for i, station in enumerate(['AV08', 'AV12']):
+for i, station in enumerate(station_info.keys()):
     for j, attr in enumerate(['init_output', 'bias', 'output']):
         ax = axs[i, j]
         gps = f'{direction}_{station}'
@@ -390,7 +495,9 @@ for i, station in enumerate(['AV08', 'AV12']):
         for tick in ax.get_xticklabels():
             tick.set_rotation(-20)
 plt.tight_layout()
+# plt.savefig(os.path.join(
+#     SAVE_PATH, f'{direction}_mogi_v_bias_v_corr_gps_date_AV08_12.png'))
 plt.savefig(os.path.join(
-    SAVE_PATH, f'{direction}_mogi_v_bias_v_corr_gps_date_AV08_12.png'))
+    SAVE_PATH, f'{direction}_mogi_v_bias_v_corr_gps_date.png'))
 plt.show()
 # %%

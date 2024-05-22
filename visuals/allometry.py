@@ -39,8 +39,9 @@ for zone in zones_of_interest:
     plt.hexbin(x=filtered_df['CD'], y=filtered_df['H'], gridsize=80, cmap='viridis', bins='log')
     # Plot the logarithmic fit line
     plt.plot(cd_space, nonlin_func(cd_space, *params), color='red', linewidth=2)
-    plt.xlabel('Crown Diameter (CD)')
-    plt.ylabel('Height (H)')
+    fontsize = 25
+    plt.xlabel('Crown Diameter ($Z_{\mathrm{CD}}$)')
+    plt.ylabel('Height ($Z_{\mathrm{H}}$)')
     plt.title(f'{field} {zone}: H = exp({np.round(params[0], 3)}+{np.round(params[1], 3)}*ln(CD))')
     plt.savefig(SAVE_PATH + field +'_'+ zone + '_H_vs_CD_fit.png')
     plt.show()
@@ -57,8 +58,8 @@ filtered_df = df[df[field].isin(zones)]
 X = 'CD'
 Y = 'H'
 labels = {
-    'CD': 'Crown Diameter (CD)',
-    'H': 'Height (H)',
+    'CD': 'Crown Diameter ($Z_{\mathrm{CD}}$)',
+    'H': 'Tree Height ($Z_{\mathrm{H}}$)',
 }
 
 # Fit your data to the log_func
@@ -79,9 +80,13 @@ plt.figure(figsize=(10, 6))
 plt.hexbin(x=filtered_df[X], y=filtered_df[Y], gridsize=80, cmap='viridis', bins='log')
 # Plot the logarithmic fit line
 plt.plot(cd_space, nonlin_func(cd_space, *params), color='red', linewidth=2)
-plt.xlabel(labels[X])
-plt.ylabel(labels[Y])
+fontsize = 22
+plt.xlabel(labels[X], fontsize=fontsize)
+plt.ylabel(labels[Y], fontsize=fontsize)
+# set the tick labels size same for both axes
+plt.tick_params(axis='both', which='major', labelsize=fontsize)
 plt.title(f'{field} Temperate Forests: {Y} = exp({np.round(params[0], 3)}+{np.round(params[1], 3)}*ln({X})), R-squared: {np.round(r_squared, 3)}')
+plt.tight_layout()
 plt.savefig(SAVE_PATH + field +'_'+ 'temperate_forests' + f'_{X}_vs_{Y}_fit.png')
 plt.show()
 
